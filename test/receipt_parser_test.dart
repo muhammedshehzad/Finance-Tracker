@@ -60,7 +60,7 @@ UTR: 431298765401
 ''';
     final r = parser.parse(text);
     expect(r.amountPaise, 50000);
-    expect(r.payee, 'AMEEN K');
+    expect(r.payee, 'Ameen K');
     expect(r.upiRef, '431298765401');
     expect(r.date, DateTime(2026, 11, 5, 22, 47));
     expect(r.direction, ReceiptDirection.paid);
@@ -109,5 +109,24 @@ UPI transaction ID 600011112222
   test('no amount when nothing looks like money', () {
     final r = parser.parse('Some random screenshot\nhello world');
     expect(r.amountPaise, isNull);
+  });
+
+  test('Google Pay paid screen with banking name and no reference', () {
+    const text = '''
+₹4,000
+Paid to
+FATHIMATHUL MUSHIRIF
+Banking name: FATHIMATHUL MUSHIRIF
+25 November 2026, 5:27 pm
+POWERED BY
+UPI
+UNIFIED PAYMENTS INTERFACE
+''';
+    final r = parser.parse(text);
+    expect(r.amountPaise, 400000);
+    expect(r.payee, 'Fathimathul Mushirif');
+    expect(r.upiRef, isNull);
+    expect(r.date, DateTime(2026, 11, 25, 17, 27));
+    expect(r.direction, ReceiptDirection.paid);
   });
 }

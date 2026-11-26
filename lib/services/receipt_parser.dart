@@ -183,7 +183,14 @@ class ReceiptParser {
     if (notNames.contains(lower)) return null;
     if (RegExp(r'^\d+$').hasMatch(name)) return null;
     if (RegExp(r'(19|20)\d{2}').hasMatch(name)) return null;
-    return name;
+    return _titleCase(name);
+  }
+
+  /// Turns an all-caps name like FATHIMA BEEVI into Fathima Beevi. Short
+  /// words such as SBI stay as they are, and mixed-case names are untouched.
+  static String _titleCase(String name) {
+    if (name != name.toUpperCase() || !name.contains(RegExp('[A-Z]{4}'))) return name;
+    return name.split(' ').map((w) => w.length <= 3 ? w : w[0] + w.substring(1).toLowerCase()).join(' ');
   }
 
   static final _vpaPattern = RegExp(r'\b([a-zA-Z0-9.\-_]{2,})@([a-zA-Z]{2,})\b');
