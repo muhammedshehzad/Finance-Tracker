@@ -33,7 +33,7 @@ jobs:
       - run: flutter test
 
   build:
-    name: Build release APK
+    name: Build release APKs
     needs: check
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
@@ -70,23 +70,29 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: flutter build apk --release --build-number=${{ github.run_number }}
+        run: |
+          for flavor in full lite; do
+            flutter build apk --release --flavor "$flavor" --split-per-abi --build-number=${{ github.run_number }}
+          done
 
-      - name: Name the APK
+      - name: Name the APKs
         run: |
           version=$(grep '^version:' pubspec.yaml | sed -E 's/version: *([^+]*).*/\1/')
-          echo "APK=finance-tracker-$version-${{ github.run_number }}.apk" >> "$GITHUB_ENV"
-          mv build/app/outputs/flutter-apk/app-release.apk "finance-tracker-$version-${{ github.run_number }}.apk"
+          mkdir dist
+          out=build/app/outputs/flutter-apk
+          mv "$out/app-arm64-v8a-full-release.apk" "dist/finance-tracker-$version-${{ github.run_number }}.apk"
+          mv "$out/app-arm64-v8a-lite-release.apk" "dist/finance-tracker-lite-$version-${{ github.run_number }}.apk"
+          echo "BUILD=finance-tracker-$version-${{ github.run_number }}" >> "$GITHUB_ENV"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APK }}
-          path: ${{ env.APK }}
-          retention-days: 30
+          name: ${{ env.BUILD }}
+          path: dist/*.apk
+          retention-days: 14
 
       - name: Publish a release for version tags
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ env.APK }}
+          files: dist/*.apk
           generate_release_notes: true

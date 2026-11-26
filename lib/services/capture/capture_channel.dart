@@ -34,7 +34,11 @@ class CaptureChannel {
 
   static const _channel = MethodChannel('finance_tracker/capture');
 
-  bool get supported => Platform.isAndroid;
+  /// Whether this build includes the listener. The lite build leaves it out
+  /// so Play Protect lets it install from a file manager or chat app.
+  bool get included => appFlavor != 'lite';
+
+  bool get supported => Platform.isAndroid && included;
 
   Future<bool> isEnabled() async => supported && (await _channel.invokeMethod<bool>('isEnabled') ?? false);
 

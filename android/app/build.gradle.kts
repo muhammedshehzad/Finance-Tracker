@@ -45,6 +45,17 @@ android {
         }
     }
 
+    flavorDimensions += "edition"
+    productFlavors {
+        create("full") {
+            dimension = "edition"
+        }
+        create("lite") {
+            dimension = "edition"
+            versionNameSuffix = "-lite"
+        }
+    }
+
     buildTypes {
         release {
             signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")

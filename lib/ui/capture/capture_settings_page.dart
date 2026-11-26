@@ -73,8 +73,17 @@ class _CaptureSettingsPageState extends ConsumerState<CaptureSettingsPage> with 
     return Scaffold(
       appBar: AppBar(title: const Text('Payment capture')),
       body: !channel.supported
-          ? const Center(
-              child: Padding(padding: EdgeInsets.all(32), child: Text('Payment capture works on Android only.')),
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Text(
+                  channel.included
+                      ? 'Payment capture works on Android only.'
+                      : 'This is the lite build, which leaves out payment capture so it installs from anywhere. '
+                            'Install the full build over USB to capture payments. Your entries stay.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
             )
           : enabled == null
           ? const Center(child: CircularProgressIndicator())

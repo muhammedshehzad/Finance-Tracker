@@ -65,7 +65,7 @@ flutter pub get
 flutter run
 ```
 
-Needs Flutter 3.50 or newer. Material widgets come from the `material_ui` package.
+Needs Flutter 3.50 or newer. Material widgets come from the `material_ui` package. `flutter run` uses the full build; add `--flavor lite` for the lite one.
 
 ```bash
 flutter analyze
@@ -74,9 +74,27 @@ flutter test
 
 72 tests cover the receipt, voice and notification parsers, money formatting, the recurring schedule, the database and its migrations, and the Excel importer end to end, plus a smoke test that opens every screen with data in it. To re-render the screens in light and dark, run `flutter test test_screens --update-goldens` and look in `test_screens/out/`.
 
+## Installing on your phone
+
+The same code builds two editions. They are the same app with the same data, so you can switch between them without losing entries.
+
+| Edition | Payment capture | Installs from |
+|---|---|---|
+| **Full** | Yes | USB only |
+| **Lite** | No | Anywhere: a browser, a file manager or a chat app |
+
+In India and several other countries, Play Protect blocks any app that asks for notification access when it comes from a browser, file manager or chat app, and offers no way to install it anyway. Payment capture needs that access, so the full edition goes in over USB, with USB debugging switched on:
+
+```bash
+flutter build apk --release --flavor full --split-per-abi
+adb install -r build/app/outputs/flutter-apk/app-arm64-v8a-full-release.apk
+```
+
+`-r` replaces the installed app and keeps your entries. Updates to the full edition go in the same way.
+
 ## Release builds
 
-Every push to `main` runs the analyzer and tests, then builds a signed release APK you can download from the run's **Artifacts**, including from the GitHub app on your phone. Push a tag such as `v1.0.0` and the APK is also attached to a GitHub Release.
+Every push to `main` runs the analyzer and tests, then builds signed release APKs of both editions for 64-bit ARM phones, which covers phones from the last several years. Download them from the run's **Artifacts**. Push a tag such as `v1.0.0` and they are also attached to a GitHub Release.
 
 Android only installs an update signed with the same key as the installed app, and uninstalling deletes your entries. So create one release key, keep it safe, and sign every build with it.
 
@@ -113,7 +131,7 @@ keyAlias=finance-tracker
 keyPassword=...
 ```
 
-Then run `flutter build apk --release`. Without a key, a release build falls back to the debug key: fine for trying the app, but it can't update a build from CI.
+Then run `flutter build apk --release --flavor full --split-per-abi`. Without a key, a release build falls back to the debug key: fine for trying the app, but it can't update a build from CI.
 
 CI uses the run number as the build number, so each APK installs over the last. A local build keeps the `+1` from `pubspec.yaml`, so it can't replace a newer CI build.
 
@@ -128,7 +146,8 @@ lib/
               capture/ (notification parser and sync)
   state/      Riverpod providers and FinanceActions
   ui/         screens, grouped by feature
-android/      notification listener and its method channel (Kotlin)
+android/      notification listener and its method channel (Kotlin);
+              the full flavor's manifest is the only place the listener is declared
 test/         unit and widget tests
 ```
 
