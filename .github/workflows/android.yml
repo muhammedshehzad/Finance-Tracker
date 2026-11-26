@@ -59,11 +59,23 @@ jobs:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
           if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "::error::Add the ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD secrets. See 'Release builds' in the README."
-            exit 1
+            echo "::warning::No signing key, so this run only checks that the app builds and uploads no APKs. Add the ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD secrets. See 'Release builds' in the README."
+            exit 0
           fi
           echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
           echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+          echo "SIGNED=true" >> "$GITHUB_ENV"
+
+      - name: Restore the Firebase settings
+        env:
+          FIREBASE_ENV_JSON: ${{ secrets.FIREBASE_ENV_JSON }}
+        run: |
+          if [ -z "$FIREBASE_ENV_JSON" ]; then
+            echo "::notice::No FIREBASE_ENV_JSON secret, so these builds read screenshots and voice on the phone only."
+            echo '{}' > "$RUNNER_TEMP/firebase.env.json"
+          else
+            printf '%s' "$FIREBASE_ENV_JSON" > "$RUNNER_TEMP/firebase.env.json"
+          fi
 
       - name: Build
         env:
@@ -72,10 +84,13 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           for flavor in full lite; do
-            flutter build apk --release --flavor "$flavor" --split-per-abi --build-number=${{ github.run_number }}
+            flutter build apk --release --flavor "$flavor" --split-per-abi \
+              --build-number=${{ github.run_number }} \
+              --dart-define-from-file="$RUNNER_TEMP/firebase.env.json"
           done
 
       - name: Name the APKs
+        if: env.SIGNED == 'true'
         run: |
           version=$(grep '^version:' pubspec.yaml | sed -E 's/version: *([^+]*).*/\1/')
           mkdir dist
@@ -85,13 +100,14 @@ jobs:
           echo "BUILD=finance-tracker-$version-${{ github.run_number }}" >> "$GITHUB_ENV"
 
       - uses: actions/upload-artifact@v4
+        if: env.SIGNED == 'true'
         with:
           name: ${{ env.BUILD }}
           path: dist/*.apk
           retention-days: 14
 
       - name: Publish a release for version tags
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: env.SIGNED == 'true' && startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*.apk
