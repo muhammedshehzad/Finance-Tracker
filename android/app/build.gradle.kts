@@ -15,7 +15,7 @@ fun signingValue(property: String, env: String): String? =
 
 android {
     namespace = "com.shehzad.finance_tracker"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = maxOf(flutter.compileSdkVersion, 37)
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
