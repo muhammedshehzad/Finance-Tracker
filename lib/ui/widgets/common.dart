@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -76,9 +78,15 @@ class AsyncBody<T> extends StatelessWidget {
     return value.when(
       data: builder,
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(
-        child: Padding(padding: const EdgeInsets.all(24), child: Text('Something went wrong: $e')),
-      ),
+      error: (e, st) {
+        log('Screen failed to load', error: e, stackTrace: st);
+        return const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text('This screen couldn\'t load. Go back and open it again.', textAlign: TextAlign.center),
+          ),
+        );
+      },
     );
   }
 }

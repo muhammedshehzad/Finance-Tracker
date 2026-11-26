@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -137,8 +138,9 @@ class _ImportPageState extends ConsumerState<ImportPage> {
     try {
       final result = await ref.read(actionsProvider).importPlan(plan, mapping);
       if (mounted) setState(() => _result = result);
-    } catch (e) {
-      if (mounted) showSnack(context, 'Nothing was imported: $e');
+    } catch (e, st) {
+      log('Import failed', error: e, stackTrace: st);
+      if (mounted) showSnack(context, 'Nothing was imported. Your entries are unchanged.');
     } finally {
       if (mounted) setState(() => _busy = false);
     }

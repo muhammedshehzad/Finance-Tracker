@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_ui/material_ui.dart';
@@ -33,8 +35,9 @@ Future<TxnDraft?> scanReceiptToDraft(
   ScannedReceipt? scanned;
   try {
     scanned = await _withProgress(context, scanner.pickAndScan(source: source));
-  } catch (e) {
-    if (context.mounted) showSnack(context, 'Couldn\'t read that image: $e');
+  } catch (e, st) {
+    log('Receipt scan failed', error: e, stackTrace: st);
+    if (context.mounted) showSnack(context, 'Couldn\'t read that screenshot. Try another, or enter it by hand.');
     return null;
   }
   if (scanned == null || !context.mounted) return null;

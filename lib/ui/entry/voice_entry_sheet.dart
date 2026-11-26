@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -61,7 +63,10 @@ class _VoiceEntrySheetState extends ConsumerState<VoiceEntrySheet> {
         if (!mounted) return;
         setState(() {
           _listening = false;
-          _error = e == 'error_no_match' ? 'Didn\'t catch that. Tap the mic and try again.' : 'Voice error: $e';
+          if (e != 'error_no_match') log('Voice recognition failed: $e');
+          _error = e == 'error_no_match'
+              ? 'Didn\'t catch that. Tap the mic and try again.'
+              : 'Voice entry stopped. Tap the mic and try again.';
         });
       },
       onStatus: (s) {
