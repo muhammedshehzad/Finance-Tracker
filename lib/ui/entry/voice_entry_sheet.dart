@@ -7,13 +7,15 @@ import '../../core/money.dart';
 import '../../data/models/account.dart';
 import '../../data/models/category.dart';
 import '../../data/models/txn.dart';
+import '../../services/ai/gemini_service.dart';
 import '../../services/voice_parser.dart';
+import '../../services/voice_recorder.dart';
 import '../../services/voice_service.dart';
 import '../../state/providers.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 
-/// Speech to text through Android's recogniser.
+/// Speech to text through Android's recogniser, used when Gemini isn't.
 final voiceServiceProvider = Provider<VoiceService>((ref) => VoiceService());
 
 /// Listens, splits what was said into drafts and saves them on confirm.
@@ -28,6 +30,9 @@ Future<void> showVoiceEntrySheet(BuildContext context) {
 
 /// Say "paid 90 for lunch and 30 for tea", check what was understood, then
 /// confirm. Nothing is saved before Save is tapped.
+///
+/// With Gemini set up, the note is recorded and Gemini writes it down.
+/// Without it, or once Gemini fails, Android's recogniser listens instead.
 class VoiceEntrySheet extends ConsumerStatefulWidget {
   const VoiceEntrySheet({super.key});
 
@@ -39,25 +44,79 @@ class _VoiceEntrySheetState extends ConsumerState<VoiceEntrySheet> {
   final _transcript = TextEditingController();
   List<_EditableDraft> _drafts = [];
   bool _listening = false;
+  bool _transcribing = false;
+  bool _recording = false;
+  bool _onDeviceOnly = false;
   String? _error;
   bool _saving = false;
   late final VoiceService _voice;
+  late final GeminiService _gemini;
+  final _recorder = VoiceRecorder();
 
   @override
   void initState() {
     super.initState();
     _voice = ref.read(voiceServiceProvider);
+    _gemini = ref.read(geminiServiceProvider);
     WidgetsBinding.instance.addPostFrameCallback((_) => _start());
   }
 
   @override
   void dispose() {
     _voice.cancel();
+    _recorder.dispose();
     _transcript.dispose();
     super.dispose();
   }
 
   Future<void> _start() async {
+    if (!_onDeviceOnly && await _gemini.isAvailable()) {
+      await _startRecording();
+    } else {
+      await _startListening();
+    }
+  }
+
+  Future<void> _startRecording() async {
+    final ok = await _recorder.start(onDone: _stop);
+    if (!mounted) return;
+    setState(() {
+      _error = ok ? null : 'Allow the microphone to speak an entry, or type below.';
+      _listening = ok;
+      _recording = ok;
+    });
+  }
+
+  /// Sends the recording to Gemini. A failure switches this sheet to the
+  /// on-device recogniser, so the next tap of the mic still works offline.
+  Future<void> _finishRecording() async {
+    if (!_recording || !mounted) return;
+    setState(() {
+      _recording = false;
+      _listening = false;
+      _transcribing = true;
+    });
+    String? text;
+    String? error;
+    try {
+      final audio = await _recorder.stop();
+      text = audio == null ? null : await _gemini.transcribe(audio, 'audio/wav');
+      if (text == null) error = 'Didn\'t catch that. Tap the mic and try again.';
+    } catch (e, st) {
+      log('Gemini could not transcribe the voice note', error: e, stackTrace: st);
+      _onDeviceOnly = true;
+      error = 'Couldn\'t reach Gemini. Tap the mic to use on-device voice, or type below.';
+    }
+    if (!mounted) return;
+    setState(() {
+      _transcribing = false;
+      _error = error;
+      if (text != null) _transcript.text = text;
+    });
+    if (text != null) await _parse();
+  }
+
+  Future<void> _startListening() async {
     final ok = await _voice.init(
       onError: (e) {
         if (!mounted) return;
@@ -97,6 +156,7 @@ class _VoiceEntrySheetState extends ConsumerState<VoiceEntrySheet> {
   }
 
   Future<void> _stop() async {
+    if (_recording) return _finishRecording();
     await _voice.stop();
     if (mounted) setState(() => _listening = false);
     await _parse();
@@ -165,7 +225,11 @@ class _VoiceEntrySheetState extends ConsumerState<VoiceEntrySheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      _listening ? 'Listening…' : 'Say what you paid or received',
+                      _transcribing
+                          ? 'Reading what you said…'
+                          : _listening
+                          ? 'Listening…'
+                          : 'Say what you paid or received',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),
@@ -173,11 +237,12 @@ class _VoiceEntrySheetState extends ConsumerState<VoiceEntrySheet> {
                     iconSize: 28,
                     tooltip: _listening ? 'Stop' : 'Speak again',
                     icon: Icon(_listening ? Icons.stop : Icons.mic),
-                    onPressed: _listening ? _stop : _start,
+                    onPressed: _transcribing ? null : (_listening ? _stop : _start),
                   ),
                 ],
               ),
             ),
+            if (_transcribing) const LinearProgressIndicator(),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
               child: TextField(

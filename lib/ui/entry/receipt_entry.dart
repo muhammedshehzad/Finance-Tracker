@@ -16,10 +16,12 @@ import '../../state/providers.dart';
 import '../widgets/common.dart';
 import 'transaction_form_page.dart';
 
-/// Picks payment screenshots and reads them with on-device OCR.
-final receiptScannerProvider = Provider<ReceiptScanner>((ref) => ReceiptScanner());
+/// Picks payment screenshots and reads them with Gemini or on the phone.
+final receiptScannerProvider = Provider<ReceiptScanner>(
+  (ref) => ReceiptScanner(gemini: ref.watch(geminiServiceProvider)),
+);
 
-/// Picks a payment screenshot, reads it on the device and turns it into a
+/// Picks a payment screenshot, reads it and turns it into a
 /// draft for the entry form. Returns null if the user backs out, the image
 /// can't be read, or the payment is already recorded.
 Future<TxnDraft?> scanReceiptToDraft(

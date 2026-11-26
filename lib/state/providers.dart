@@ -10,6 +10,7 @@ import '../data/models/category.dart';
 import '../data/models/recurring_rule.dart';
 import '../data/models/txn.dart';
 import '../data/models/txn_draft.dart';
+import '../services/ai/gemini_service.dart';
 import '../services/capture/capture_channel.dart';
 import '../services/capture/capture_service.dart';
 import '../services/capture/notification_parser.dart';
@@ -23,6 +24,9 @@ import '../services/reminder_service.dart';
 final repositoryProvider = Provider<FinanceRepository>(
   (ref) => throw UnimplementedError('repositoryProvider must be overridden'),
 );
+
+/// Reads screenshots and voice notes with Gemini when the build has it set up.
+final geminiServiceProvider = Provider<GeminiService>((ref) => GeminiService());
 
 /// Schedules local reminders for recurring payments.
 final reminderServiceProvider = Provider<ReminderService>((ref) => ReminderService());

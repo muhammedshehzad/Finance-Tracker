@@ -30,3 +30,7 @@ migrate_working_dir/
 *.jks
 *.keystore
 key.properties
+
+# Firebase project settings for Gemini
+firebase.env.json
+google-services.json

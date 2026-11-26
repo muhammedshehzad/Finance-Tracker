@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../services/ai/gemini_config.dart';
 import '../../services/csv_export.dart';
 import '../../state/providers.dart';
 import '../budgets/budget_settings_page.dart';
@@ -15,6 +16,27 @@ import '../widgets/common.dart';
 /// Settings and less frequent tools: import, export, capture, categories.
 class MorePage extends ConsumerWidget {
   const MorePage({super.key});
+
+  void _explainReading(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('How screenshots and voice are read'),
+        content: Text(
+          GeminiConfig.isConfigured
+              ? 'Screenshots you add and voice notes you record are sent to Google\'s Gemini, through Firebase, '
+                    'to be read. Nothing else leaves the phone: your entries, accounts and backups stay here.\n\n'
+                    'On Gemini\'s free tier, Google may use what is sent to improve its products, and people may '
+                    'review it. A Firebase project with billing turned on keeps it out of that.\n\n'
+                    'Without a connection, the app reads them on the phone instead.'
+              : 'Screenshots and voice are read on the phone, and nothing leaves it.\n\n'
+                    'Gemini reads them more accurately. To use it, build the app with a Firebase project, '
+                    'as the README explains.',
+        ),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+      ),
+    );
+  }
 
   Future<void> _export(BuildContext context, WidgetRef ref) async {
     final repo = ref.read(repositoryProvider);
@@ -85,13 +107,20 @@ class MorePage extends ConsumerWidget {
             onTap: () => _export(context, ref),
           ),
           const Divider(),
+          ListTile(
+            leading: const Icon(Icons.auto_awesome_outlined),
+            title: const Text('Reading screenshots and voice'),
+            subtitle: Text(
+              GeminiConfig.isConfigured
+                  ? 'Gemini reads them, so they are sent to Google'
+                  : 'Read on the phone. Nothing leaves it',
+            ),
+            onTap: () => _explainReading(context),
+          ),
           const ListTile(
             leading: Icon(Icons.lock_outline),
-            title: Text('Your data stays on this phone'),
-            subtitle: Text(
-              'Entries, screenshots and voice are processed on the device. '
-              'Export regularly: uninstalling the app deletes its data.',
-            ),
+            title: Text('Your entries stay on this phone'),
+            subtitle: Text('Export regularly: uninstalling the app deletes its data.'),
           ),
         ],
       ),

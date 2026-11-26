@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -5,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'ai/gemini_service.dart';
 import 'receipt_parser.dart';
 
 /// A stored screenshot and what was read from it.
@@ -16,22 +18,45 @@ class ScannedReceipt {
   final ReceiptParseResult result;
 }
 
-/// Picks a payment screenshot, keeps a private copy, and reads it with
-/// on-device ML Kit text recognition. Nothing leaves the phone.
+/// Picks a payment screenshot, keeps a private copy, and reads it.
+///
+/// Gemini reads it when the build has it set up, and on-device ML Kit text
+/// recognition reads it otherwise, or when Gemini fails or finds no amount.
 class ReceiptScanner {
-  ReceiptScanner({ImagePicker? picker, this.parser = const ReceiptParser()}) : _picker = picker ?? ImagePicker();
+  ReceiptScanner({ImagePicker? picker, this.parser = const ReceiptParser(), this.gemini})
+    : _picker = picker ?? ImagePicker();
 
   final ImagePicker _picker;
   final ReceiptParser parser;
+  final GeminiService? gemini;
 
   /// Returns null when the user backs out of the picker.
   Future<ScannedReceipt?> pickAndScan({ImageSource source = ImageSource.gallery}) async {
     final picked = await _picker.pickImage(source: source, imageQuality: 92);
     if (picked == null) return null;
     final stored = await _storeCopy(File(picked.path));
-    final text = await recognise(stored.path);
-    return ScannedReceipt(imagePath: stored.path, result: parser.parse(text));
+    return ScannedReceipt(imagePath: stored.path, result: await read(stored.path));
   }
+
+  /// Reads the screenshot with Gemini, falling back to the phone.
+  Future<ReceiptParseResult> read(String imagePath) async {
+    final ai = gemini;
+    if (ai != null) {
+      try {
+        final result = await ai.readReceipt(await File(imagePath).readAsBytes(), _mimeType(imagePath));
+        if (result != null && result.hasAmount) return result;
+      } catch (e, st) {
+        log('Gemini could not read the screenshot, reading it on the phone', error: e, stackTrace: st);
+      }
+    }
+    return parser.parse(await recognise(imagePath));
+  }
+
+  static String _mimeType(String path) => switch (p.extension(path).toLowerCase()) {
+    '.png' => 'image/png',
+    '.webp' => 'image/webp',
+    _ => 'image/jpeg',
+  };
 
   /// Reads the text in the image, line by line in ML Kit's reading order.
   Future<String> recognise(String imagePath) async {
