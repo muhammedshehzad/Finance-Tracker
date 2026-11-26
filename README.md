@@ -11,6 +11,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/muhammedshehzad/finance-tracker/actions/workflows/android.yml"><img alt="Build" src="https://github.com/muhammedshehzad/finance-tracker/actions/workflows/android.yml/badge.svg"></a>
   <img alt="Flutter 3.50" src="https://img.shields.io/badge/Flutter-3.50-02569B?logo=flutter&logoColor=white">
   <img alt="Dart 3.14" src="https://img.shields.io/badge/Dart-3.14-0175C2?logo=dart&logoColor=white">
   <img alt="Android 6.0+" src="https://img.shields.io/badge/Android-6.0%2B-3DDC84?logo=android&logoColor=white">
