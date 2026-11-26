@@ -56,6 +56,9 @@ class FinanceRepository {
   final AppDatabase _database;
   Database get _db => _database.db;
 
+  /// The open database, for whole-database work such as backups.
+  Database get database => _db;
+
   Future<List<Account>> accounts({bool includeArchived = false}) async {
     final rows = await _db.query('accounts', where: includeArchived ? null : 'archived = 0', orderBy: 'sort_order, id');
     return rows.map(Account.fromMap).toList();

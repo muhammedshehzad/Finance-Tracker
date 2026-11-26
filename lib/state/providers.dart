@@ -11,6 +11,7 @@ import '../data/models/recurring_rule.dart';
 import '../data/models/txn.dart';
 import '../data/models/txn_draft.dart';
 import '../services/ai/gemini_service.dart';
+import '../services/backup_service.dart';
 import '../services/capture/capture_channel.dart';
 import '../services/capture/capture_service.dart';
 import '../services/capture/notification_parser.dart';
@@ -27,6 +28,9 @@ final repositoryProvider = Provider<FinanceRepository>(
 
 /// Reads screenshots and voice notes with Gemini when the build has it set up.
 final geminiServiceProvider = Provider<GeminiService>((ref) => GeminiService());
+
+/// Backs up all data to a JSON file and restores it.
+final backupServiceProvider = Provider<BackupService>((ref) => BackupService(ref.watch(repositoryProvider).database));
 
 /// Schedules local reminders for recurring payments.
 final reminderServiceProvider = Provider<ReminderService>((ref) => ReminderService());
@@ -341,6 +345,14 @@ class FinanceActions {
     if (posted > 0) _changed();
     await syncReminders();
     return posted;
+  }
+
+  /// Replaces all data with a backup, then refreshes every screen and the
+  /// reminders.
+  Future<void> restoreBackup(String backup) async {
+    await _ref.read(backupServiceProvider).restore(backup);
+    _changed();
+    await syncReminders();
   }
 
   /// Reschedules reminders for the active rules. Best effort: a failure
