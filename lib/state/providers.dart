@@ -18,6 +18,7 @@ import '../services/capture/notification_parser.dart';
 import '../services/category_matcher.dart';
 import '../services/import/import_planner.dart';
 import '../services/import/import_service.dart';
+import '../services/lock/app_lock_service.dart';
 import '../services/recurring_service.dart';
 import '../services/reminder_service.dart';
 
@@ -372,3 +373,24 @@ class FinanceActions {
 
 /// See [FinanceActions].
 final actionsProvider = Provider<FinanceActions>(FinanceActions.new);
+
+/// Unlocks the app with the phone's screen lock.
+final appLockServiceProvider = Provider<AppLockService>((ref) => AppLockService());
+
+/// Whether the app asks for the phone's screen lock when opened. Kept on this
+/// phone only, so restoring a backup never turns it on or off.
+class AppLockSetting extends AsyncNotifier<bool> {
+  static const key = 'app_lock';
+
+  @override
+  Future<bool> build() async => await ref.watch(repositoryProvider).setting(key) == 'on';
+
+  /// Turns the lock on or off.
+  Future<void> set(bool on) async {
+    await ref.read(repositoryProvider).setSetting(key, on ? 'on' : null);
+    state = AsyncData(on);
+  }
+}
+
+/// See [AppLockSetting].
+final appLockProvider = AsyncNotifierProvider<AppLockSetting, bool>(AppLockSetting.new);

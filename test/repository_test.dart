@@ -32,6 +32,15 @@ void main() {
     upiRef: upi,
   );
 
+  test('settings are stored, replaced and removed', () async {
+    expect(await repo.setting('app_lock'), isNull);
+    await repo.setSetting('app_lock', 'on');
+    await repo.setSetting('app_lock', 'off');
+    expect(await repo.setting('app_lock'), 'off');
+    await repo.setSetting('app_lock', null);
+    expect(await repo.setting('app_lock'), isNull);
+  });
+
   test('seeds accounts and categories', () async {
     expect(acc.keys, containsAll([AccountKind.cash, AccountKind.bank, AccountKind.creditCard, AccountKind.receivable]));
     expect(await repo.categories(kind: CategoryKind.income), isNotEmpty);

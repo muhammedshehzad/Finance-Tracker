@@ -69,6 +69,17 @@ abstract final class AppIcons {
   static const bank = HugeIcons.strokeRoundedBank;
   static const creditCard = HugeIcons.strokeRoundedCreditCard;
   static const lent = HugeIcons.strokeRoundedAgreement02;
+  static const lock = HugeIcons.strokeRoundedSquareLock02;
+  static const fingerprint = HugeIcons.strokeRoundedFingerPrint;
+  static const autoBackup = HugeIcons.strokeRoundedDatabaseSync01;
+  static const folder = HugeIcons.strokeRoundedFolder01;
+  static const goal = HugeIcons.strokeRoundedTarget02;
+  static const putIn = HugeIcons.strokeRoundedMoneyAdd02;
+  static const takeOut = HugeIcons.strokeRoundedMoneyRemove02;
+  static const archive = HugeIcons.strokeRoundedArchive02;
+  static const insights = HugeIcons.strokeRoundedIdea01;
+  static const up = HugeIcons.strokeRoundedArrowUpRight01;
+  static const down = HugeIcons.strokeRoundedArrowDownRight01;
 }
 
 /// Draws an [AppIcons] icon. Size and colour follow the surrounding icon

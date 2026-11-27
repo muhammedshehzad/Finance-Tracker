@@ -14,7 +14,7 @@
   <a href="https://github.com/muhammedshehzad/finance-tracker/actions/workflows/android.yml"><img alt="Build" src="https://github.com/muhammedshehzad/finance-tracker/actions/workflows/android.yml/badge.svg"></a>
   <img alt="Flutter 3.50" src="https://img.shields.io/badge/Flutter-3.50-02569B?logo=flutter&logoColor=white">
   <img alt="Dart 3.14" src="https://img.shields.io/badge/Dart-3.14-0175C2?logo=dart&logoColor=white">
-  <img alt="Android 6.0+" src="https://img.shields.io/badge/Android-6.0%2B-3DDC84?logo=android&logoColor=white">
+  <img alt="Android 7.0+" src="https://img.shields.io/badge/Android-7.0%2B-3DDC84?logo=android&logoColor=white">
   <img alt="Data on device" src="https://img.shields.io/badge/data-on%20device-00796B">
 </p>
 
@@ -42,6 +42,7 @@
 - **Budgets**: an overall monthly limit plus limits per category.
 - **Backup and restore**: all your data in one file you can keep in Drive, and back on a new phone in two taps.
 - **Export**: a CSV of every entry, ready for Sheets or Excel.
+- **App lock**: asks for your fingerprint, face or phone PIN when the app opens, and again after a minute away. It uses the phone's own screen lock, so nothing new to remember.
 - **Light and dark** themes that follow the system.
 
 <p align="center">
@@ -195,6 +196,7 @@ tool/         turns google-services.json into build settings
 | Microphone, Bluetooth | Voice entry. With Gemini on, the note is recorded and sent to Google to be written down. Offline, Android's speech service listens, and may itself use the network unless the offline English (India) pack is installed. |
 | Notifications, boot completed | Payment reminders, rescheduled after a restart. They use inexact alarms, so they can arrive a few minutes late. |
 | Notification access | Payment capture, granted from *More → Payment capture*. Only the apps switched on there are read. |
+| Biometric | App lock. The phone checks the fingerprint or PIN itself; the app only learns whether it matched. |
 
 Images come through the system photo picker, so there is no storage permission.
 

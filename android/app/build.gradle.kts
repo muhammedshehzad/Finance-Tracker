@@ -26,7 +26,7 @@ android {
 
     defaultConfig {
         applicationId = "com.shehzad.finance_tracker"
-        minSdk = maxOf(flutter.minSdkVersion, 23)
+        minSdk = maxOf(flutter.minSdkVersion, 24)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

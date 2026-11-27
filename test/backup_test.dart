@@ -44,6 +44,20 @@ void main() {
     expect((await repo.accounts(includeArchived: true)).length, accountsBefore);
   });
 
+  test('phone settings such as app lock stay out of backups and survive a restore', () async {
+    await repo.setSetting('app_lock', 'on');
+    final saved = await backup.export(now: DateTime(2026, 11, 26, 9));
+    expect((jsonDecode(saved) as Map)['tables'], isNot(contains('settings')));
+
+    await repo.setSetting('app_lock', null);
+    await backup.restore(saved);
+    expect(await repo.setting('app_lock'), isNull);
+
+    await repo.setSetting('app_lock', 'on');
+    await backup.restore(saved);
+    expect(await repo.setting('app_lock'), 'on');
+  });
+
   test('inspect reports the date and number of entries', () async {
     await addLunch(9000);
     await addLunch(2600);

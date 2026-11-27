@@ -14,6 +14,7 @@ import '../../core/dates.dart';
 import '../../services/ai/gemini_config.dart';
 import '../../services/backup_service.dart';
 import '../../services/csv_export.dart';
+import '../../services/lock/app_lock_service.dart';
 import '../../state/providers.dart';
 import '../budgets/budget_settings_page.dart';
 import '../capture/capture_settings_page.dart';
@@ -192,6 +193,7 @@ class MorePage extends ConsumerWidget {
             onTap: () => _restore(context, ref),
           ),
           const Divider(),
+          const _AppLockTile(),
           ListTile(
             leading: const AppIcon(AppIcons.ai),
             title: const Text('Reading screenshots and voice'),
@@ -209,6 +211,60 @@ class MorePage extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Turns app lock on or off. Either way the phone's screen lock is asked
+/// for first, so only the phone's owner can change it.
+class _AppLockTile extends ConsumerWidget {
+  const _AppLockTile();
+
+  Future<void> _toggle(BuildContext context, WidgetRef ref, bool on) async {
+    final lock = ref.read(appLockServiceProvider);
+    if (on && !await lock.isAvailable()) {
+      if (!context.mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Set a screen lock first'),
+          content: const Text(
+            'App lock uses your phone\'s own fingerprint, PIN or pattern. Add one in your phone\'s '
+            'Settings, under Security, then turn this on.',
+          ),
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+        ),
+      );
+      return;
+    }
+    final result = await lock.unlock(on ? 'Turn on app lock' : 'Turn off app lock');
+    if (!context.mounted) return;
+    switch (result) {
+      case UnlockResult.unlocked:
+        await ref.read(appLockProvider.notifier).set(on);
+        if (context.mounted) {
+          showSnack(context, on ? 'Finance Tracker now asks for your fingerprint or PIN.' : 'App lock is off.');
+        }
+      case UnlockResult.cancelled:
+        break;
+      case UnlockResult.noScreenLock:
+        showSnack(context, 'Your phone has no screen lock, so app lock can\'t be used.');
+      case UnlockResult.lockedOut:
+        showSnack(context, 'Too many tries. Wait a moment, then try again.');
+      case UnlockResult.failed:
+        showSnack(context, 'The phone couldn\'t check your screen lock. Try again.');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final on = ref.watch(appLockProvider).value ?? false;
+    return SwitchListTile(
+      secondary: const AppIcon(AppIcons.lock),
+      title: const Text('App lock'),
+      subtitle: const Text('Ask for your fingerprint or phone PIN when the app opens'),
+      value: on,
+      onChanged: (v) => _toggle(context, ref, v),
     );
   }
 }

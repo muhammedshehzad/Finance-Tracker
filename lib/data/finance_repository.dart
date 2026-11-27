@@ -351,6 +351,21 @@ class FinanceRepository {
     whereArgs: [DateTime.now().subtract(age).millisecondsSinceEpoch],
   );
 
+  /// A setting of this phone, or null when it was never set.
+  Future<String?> setting(String key) async {
+    final rows = await _db.query('settings', where: 'key = ?', whereArgs: [key]);
+    return rows.isEmpty ? null : rows.first['value'] as String;
+  }
+
+  /// Stores a setting; null removes it.
+  Future<void> setSetting(String key, String? value) async {
+    if (value == null) {
+      await _db.delete('settings', where: 'key = ?', whereArgs: [key]);
+      return;
+    }
+    await _db.insert('settings', {'key': key, 'value': value}, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
   Future<DateTime?> firstTxnDate() async {
     final v = Sqflite.firstIntValue(await _db.rawQuery('SELECT MIN(date) FROM transactions'));
     return v == null ? null : startOfDay(DateTime.fromMillisecondsSinceEpoch(v));

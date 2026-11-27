@@ -12,7 +12,7 @@ class AppDatabase {
 
   final Database db;
 
-  static const schemaVersion = 2;
+  static const schemaVersion = 3;
   static const fileName = 'finance_tracker.db';
 
   static Future<AppDatabase> open({DatabaseFactory? factory, String? path}) async {
@@ -26,6 +26,7 @@ class AppDatabase {
         onCreate: (db, version) async {
           await _createV1(db);
           await _createV2(db);
+          await _createV3(db);
           await seedDefaults(db);
         },
         onUpgrade: _migrate,
@@ -125,8 +126,15 @@ class AppDatabase {
     await db.execute('CREATE INDEX idx_captured_status ON captured_payments(status, posted_at)');
   }
 
+  /// v3: this phone's own settings, such as app lock and the backup
+  /// folder. Backups leave this table out, since it describes the phone.
+  static Future<void> _createV3(Database db) async {
+    await db.execute('CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
+  }
+
   static Future<void> _migrate(Database db, int from, int to) async {
     if (from < 2) await _createV2(db);
+    if (from < 3) await _createV3(db);
   }
 
   Future<void> close() => db.close();

@@ -101,10 +101,15 @@ class BackupService {
     });
   }
 
+  /// Tables that describe this phone rather than your money, such as the
+  /// app lock and the backup folder. They are neither saved nor replaced.
+  static const _phoneOnly = {'settings'};
+
   static Future<List<String>> _tableNames(DatabaseExecutor db) async {
     final rows = await db.rawQuery(
       "SELECT name FROM sqlite_master WHERE type = 'table' "
-      "AND name NOT LIKE 'sqlite_%' AND name != 'android_metadata' ORDER BY name",
+      "AND name NOT LIKE 'sqlite_%' AND name != 'android_metadata' "
+      "AND name NOT IN (${_phoneOnly.map((t) => "'$t'").join(', ')}) ORDER BY name",
     );
     return [for (final r in rows) r['name']! as String];
   }

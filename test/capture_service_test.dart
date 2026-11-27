@@ -118,15 +118,18 @@ void main() {
     expect(l.categoryById[d.categoryId]?.name, 'Food');
   });
 
-  test('an install on schema 1 gains the captured payments table on upgrade', () async {
+  test('an install on schema 1 gains the newer tables on upgrade', () async {
     final path = '${dir.path}/old.db';
     final first = await AppDatabase.open(factory: databaseFactoryFfi, path: path);
+    // Everything added after schema 1.
     await first.db.execute('DROP TABLE captured_payments');
+    await first.db.execute('DROP TABLE settings');
     await first.db.setVersion(1);
     await first.close();
 
     final upgraded = FinanceRepository(await AppDatabase.open(factory: databaseFactoryFfi, path: path));
     expect(await upgraded.capturedPayments(), isEmpty);
+    expect(await upgraded.setting('app_lock'), isNull);
     expect(await upgraded.accounts(), isNotEmpty, reason: 'existing data kept');
   });
 }
