@@ -548,6 +548,8 @@ class DriveBackup extends AsyncNotifier<DriveBackupStatus> {
 
   Future<void> turnOff() => _then(_service.turnOff);
 
+  Future<void> setWeekly(bool weekly) => _then(() => _service.setWeekly(weekly));
+
   Future<void> backUpNow() => _then(() => _service.backUp(DateTime.now()));
 
   /// Backs up if a week has passed, showing nothing. Throws

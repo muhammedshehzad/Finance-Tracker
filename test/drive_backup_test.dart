@@ -160,6 +160,45 @@ void main() {
     expect(names.last, 'finance-tracker-auto-2026-12-28_0930.json');
   });
 
+  test('with the weekly run off, Drive only gets a copy on tap, and each holds everything', () async {
+    await service.connect(monday);
+    await service.setWeekly(false);
+    expect((await service.status()).weekly, isFalse);
+    expect((await service.status()).nextAt, isNull);
+    final later = monday.add(const Duration(days: 30));
+    expect(await service.runIfDue(later), isFalse);
+    expect(drive.files, hasLength(1));
+
+    final account = (await repo.accounts()).first;
+    final category = (await repo.categories()).first;
+    await repo.saveTxn(
+      Txn(
+        type: TxnType.expense,
+        amount: 9900,
+        date: later,
+        accountId: account.id!,
+        categoryId: category.id,
+        note: 'Books',
+      ),
+    );
+    await service.backUp(later);
+    final newest = (await service.backups()).first;
+    final tables = (jsonDecode(await service.read(newest)) as Map<String, Object?>)['tables']! as Map<String, Object?>;
+    expect((tables['transactions']! as List).map((t) => (t as Map)['note']), contains('Books'));
+    expect((tables['accounts']! as List), isNotEmpty, reason: 'a full copy, not only what changed');
+
+    await service.setWeekly(true);
+    expect(await service.runIfDue(later.add(const Duration(days: 7))), isTrue);
+  });
+
+  test('turning the weekly run off clears a waiting sign-in nag', () async {
+    await service.connect(monday);
+    auth.silentToken = null;
+    await expectLater(service.runIfDue(monday.add(const Duration(days: 7))), throwsA(isA<AutoBackupException>()));
+    await service.setWeekly(false);
+    expect((await service.status()).error, isNull);
+  });
+
   test('a refused token is dropped and tried once more with a fresh one', () async {
     await service.connect(monday);
     drive.validTokens

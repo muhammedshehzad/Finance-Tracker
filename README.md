@@ -76,7 +76,7 @@ flutter analyze
 flutter test
 ```
 
-126 tests cover the receipt, voice and notification parsers, monthly insights, savings goals, app lock, automatic backup to a folder and to Google Drive, how Gemini's answers are checked, spotting payments you already have, saving several from one screenshot, money formatting, the recurring schedule, the database and its migrations, backup and restore, and the Excel importer end to end, plus a smoke test that opens every screen with data in it. To re-render the screens in light and dark, run `flutter test test_screens --update-goldens` and look in `test_screens/out/`.
+128 tests cover the receipt, voice and notification parsers, monthly insights, savings goals, app lock, automatic backup to a folder and to Google Drive, how Gemini's answers are checked, spotting payments you already have, saving several from one screenshot, money formatting, the recurring schedule, the database and its migrations, backup and restore, and the Excel importer end to end, plus a smoke test that opens every screen with data in it. To re-render the screens in light and dark, run `flutter test test_screens --update-goldens` and look in `test_screens/out/`.
 
 ## Installing on your phone
 
@@ -125,13 +125,13 @@ Screenshots and voice notes are read far more accurately by Gemini than on the p
 
 ## Backing up to Google Drive
 
-*More → Automatic backup → Sign in with Google* copies the weekly backup into the app's own hidden folder in your Drive (the `drive.appdata` scope). Only this app can open that folder, and the app can't see anything else in your Drive. *Restore from Google Drive* lists those backups, for instance on a new phone. The backups are plain JSON, so whatever is in the app is readable by Google on its servers, like anything else in your Drive.
+*More → Automatic backup → Sign in with Google* copies the weekly backup into the app's own hidden folder in your Drive (the `drive.appdata` scope). Only this app can open that folder, and the app can't see anything else in your Drive. Turn off *Back up to Drive every week* and Drive only gets a copy when you tap *Back up now*. Every copy holds everything in the app, so the newest is always complete. *Restore from Google Drive* lists those backups, for instance on a new phone. The backups are plain JSON, so whatever is in the app is readable by Google on its servers, like anything else in your Drive.
 
 Google only gives this access to a copy of the app it knows, so **set it up once** in the Google Cloud project behind your Firebase project (the console's project picker shows the same name):
 
 1. Open [APIs & Services → Library](https://console.cloud.google.com/apis/library/drive.googleapis.com), search for **Google Drive API** and choose **Enable**.
 2. Open **Google Auth Platform**. If it asks, fill in **Branding** with an app name and your email.
-3. Under **Audience**, choose **External**. While the app is in **Testing**, add your Gmail address under **Test users**. Google ends a test user's access seven days after they allow it, so the weekly backup will ask you to sign in again about once a week. To avoid that, choose **Publish app**.
+3. Under **Audience**, choose **External**. While the app is in **Testing**, add your Gmail address under **Test users**. Google ends a test user's access seven days after they allow it, so the weekly run will stop and ask you to sign in again about once a week. Tapping *Back up now* signs you in again on the spot, so if you only back up by hand, Testing is fine. To keep the weekly run going, choose **Publish app**.
 4. Under **Data Access**, choose **Add or remove scopes** and add `.../auth/drive.appdata`.
 5. Under **Clients**, look for an **Android** client with the package name `com.shehzad.finance_tracker` and your release key's SHA-1 (Firebase may already have made one). If there isn't one, choose **Create client → Android** and enter both. The SHA-1 comes from the same `keytool` command as in step 3 of *Reading with Gemini*. A debug build needs a second client with the debug key's SHA-1.
 

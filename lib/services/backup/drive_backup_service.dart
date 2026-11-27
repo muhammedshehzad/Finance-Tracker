@@ -12,9 +12,13 @@ import 'drive_client.dart';
 
 /// Whether backups also go to Google Drive, and how the last one went.
 class DriveBackupStatus {
-  const DriveBackupStatus({this.on = false, this.account, this.lastAt, this.error});
+  const DriveBackupStatus({this.on = false, this.weekly = true, this.account, this.lastAt, this.error});
 
   final bool on;
+
+  /// Whether a copy goes up by itself once a week. When false, Drive only
+  /// gets one when the user taps Back up now.
+  final bool weekly;
 
   /// The Google account's email, when Drive said which it is.
   final String? account;
@@ -23,12 +27,13 @@ class DriveBackupStatus {
   /// Why the last try failed, in words for the user. Null after a success.
   final String? error;
 
-  DateTime? get nextAt => !on ? null : lastAt?.add(AutoBackupService.every);
+  DateTime? get nextAt => !on || !weekly ? null : lastAt?.add(AutoBackupService.every);
 }
 
-/// Copies the weekly backup into the app's hidden folder in the user's
-/// Google Drive, on the same schedule as the folder backup, and reads
-/// those copies back to restore. Only the app can see that folder, and the
+/// Copies a backup into the app's hidden folder in the user's Google
+/// Drive, on the same weekly schedule as the folder backup or only when
+/// asked, and reads those copies back to restore. Every copy holds all the
+/// app's data, so the newest one is always complete. Only the app can see that folder, and the
 /// app can see nothing else in Drive.
 class DriveBackupService {
   DriveBackupService(this._repo, this._backup, this._drive, this._auth);
@@ -42,6 +47,7 @@ class DriveBackupService {
 
   static const _onKey = 'drive_backup_on';
   static const _accountKey = 'drive_backup_account';
+  static const _weeklyKey = 'drive_backup_weekly';
   static const _lastKey = 'drive_backup_last';
   static const _errorKey = 'drive_backup_error';
 
@@ -51,6 +57,7 @@ class DriveBackupService {
     final last = await _repo.setting(_lastKey);
     return DriveBackupStatus(
       on: await _repo.setting(_onKey) != null,
+      weekly: await _repo.setting(_weeklyKey) != 'off',
       account: await _repo.setting(_accountKey),
       lastAt: last == null ? null : DateTime.tryParse(last),
       error: await _repo.setting(_errorKey),
@@ -81,8 +88,17 @@ class DriveBackupService {
     } catch (e, st) {
       log('Could not take back Drive access', error: e, stackTrace: st);
     }
-    for (final key in [_onKey, _accountKey, _lastKey, _errorKey]) {
+    for (final key in [_onKey, _weeklyKey, _accountKey, _lastKey, _errorKey]) {
       await _repo.setSetting(key, null);
+    }
+  }
+
+  /// Whether a copy goes up by itself each week, or only when asked.
+  Future<void> setWeekly(bool weekly) async {
+    await _repo.setSetting(_weeklyKey, weekly ? null : 'off');
+    // A failed weekly try has nothing left to retry once it's off.
+    if (!weekly && await _repo.setting(_errorKey) == DriveBackupService.signInAgain) {
+      await _repo.setSetting(_errorKey, null);
     }
   }
 
@@ -91,7 +107,7 @@ class DriveBackupService {
   /// was due and failed.
   Future<bool> runIfDue(DateTime now) async {
     final s = await status();
-    if (!s.on) return false;
+    if (!s.on || !s.weekly) return false;
     if (s.lastAt != null && now.difference(s.lastAt!) < AutoBackupService.every && s.error == null) return false;
     await backUp(now, interactive: false);
     return true;

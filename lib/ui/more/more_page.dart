@@ -268,7 +268,8 @@ class _AutoBackupTile extends ConsumerWidget {
     final folderOn = folder?.on ?? false;
     final driveOn = drive?.on ?? false;
     final failed = folder?.error != null || drive?.error != null;
-    final where = [if (folderOn) folder!.folderName ?? 'your folder', if (driveOn) 'Google Drive'].join(' and ');
+    final weeklyDrive = driveOn && drive!.weekly;
+    final where = [if (folderOn) folder!.folderName ?? 'your folder', if (weeklyDrive) 'Google Drive'].join(' and ');
     return ListTile(
       leading: const AppIcon(AppIcons.autoBackup),
       title: const Text('Automatic backup'),
@@ -277,6 +278,8 @@ class _AutoBackupTile extends ConsumerWidget {
             ? 'Off. Save a backup to a folder or Google Drive every week'
             : failed
             ? 'The last backup failed. Tap to see why'
+            : where.isEmpty
+            ? 'To Google Drive when you tap Back up now'
             : 'Every week to $where',
         style: failed ? TextStyle(color: scheme.error) : null,
       ),

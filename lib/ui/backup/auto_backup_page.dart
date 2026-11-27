@@ -250,9 +250,13 @@ class _DriveCardState extends ConsumerState<_DriveCard> {
                       Expanded(
                         child: SwapIn(
                           alignment: Alignment.centerLeft,
-                          value: s.on,
+                          value: (s.on, s.weekly),
                           child: Text(
-                            s.on ? 'Backing up to Drive weekly' : 'Google Drive backup is off',
+                            !s.on
+                                ? 'Google Drive backup is off'
+                                : s.weekly
+                                ? 'Backing up to Drive weekly'
+                                : 'Backing up to Drive when you tap',
                             style: t.titleMedium,
                           ),
                         ),
@@ -262,7 +266,8 @@ class _DriveCardState extends ConsumerState<_DriveCard> {
                   const SizedBox(height: 8),
                   Text(
                     s.on
-                        ? 'Each week a copy goes to a hidden app folder in the Drive of $account. '
+                        ? '${s.weekly ? 'Each week' : 'Each time you tap Back up now,'} a copy of everything in the '
+                              'app goes to a hidden app folder in the Drive of $account. '
                               'The newest ${DriveBackupService.keep} are kept.'
                         : 'Sign in with Google and a copy goes to your Drive each week, so it survives losing '
                               'the phone. It goes to a hidden folder that only this app can open, and the app '
@@ -295,6 +300,18 @@ class _DriveCardState extends ConsumerState<_DriveCard> {
             ),
           ),
         ),
+        if (s.on)
+          SwitchListTile(
+            secondary: const AppIcon(AppIcons.calendar),
+            title: const Text('Back up to Drive every week'),
+            subtitle: Text(
+              s.weekly
+                  ? 'When you open the app, a week after the last copy'
+                  : 'Off. Drive only gets a copy when you tap Back up now',
+            ),
+            value: s.weekly,
+            onChanged: _busy ? null : (v) => _run(() => ref.read(driveBackupProvider.notifier).setWeekly(v)),
+          ),
         if (s.on && s.lastAt != null)
           ListTile(
             leading: const AppIcon(AppIcons.history),
