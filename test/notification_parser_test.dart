@@ -92,6 +92,42 @@ void main() {
         to: 'ACME PVT LTD',
       );
     });
+    test('Canara "Dr." UPI debit', () {
+      expectPayment(
+        p.parse(
+          'AD-CANBNK-S',
+          'Dear Customer, Acct XXXX0227 Dr. INR 1.00 on 27/11/26 to HAMNA NOOF; UPI: 633112345678. '
+              'Not you? Call 18001030 or SMS BLOCK -Canara Bank',
+          sms: true,
+        ),
+        PaymentDirection.debit,
+        100,
+        to: 'HAMNA NOOF',
+        ref: '633112345678',
+        account: '0227',
+      );
+    });
+    test('Canara "Cr." UPI credit', () {
+      expectPayment(
+        p.parse(
+          'AD-CANBNK-S',
+          'Dear Customer, Acct XXXX0227 Cr. INR 500.00 on 27/11/26 from ARIF K; UPI: 633112345678',
+          sms: true,
+        ),
+        PaymentDirection.credit,
+        50000,
+        to: 'ARIF K',
+        account: '0227',
+      );
+    });
+    test('Axis "Debit INR"', () {
+      expectPayment(
+        p.parse('VM-AXISBK', 'Debit INR 250.00 A/c no. XX4455 27-11-26 UPI/P2M/633112345678/SWIGGY', sms: true),
+        PaymentDirection.debit,
+        25000,
+        account: '4455',
+      );
+    });
     test('card spend', () {
       expectPayment(
         p.parse(

@@ -76,12 +76,17 @@ class NotificationParser {
     caseSensitive: false,
   );
 
+  /// Canara and some other banks write only "Dr." or "Cr." beside the
+  /// amount, and Axis starts with "Debit INR". A bare "credit" is left out,
+  /// since "credit card" says nothing about which way money went.
   static final _credit = RegExp(
-    r'paid you|received|credited|deposited|refund(?:ed)?|added to your|sent you|money in',
+    r'paid you|received|credited|deposited|refund(?:ed)?|added to your|sent you|money in|'
+    r'\bcr\b\.?|\bcredit\s+(?:of\s+)?(?:₹|rs\.?|inr)',
     caseSensitive: false,
   );
   static final _debit = RegExp(
-    r'\bpaid\b|\bsent\b|debited|spent|withdrawn|deducted|transferred to|purchase|payment of|money out',
+    r'\bpaid\b|\bsent\b|debited|spent|withdrawn|deducted|transferred to|purchase|payment of|money out|'
+    r'\bdr\b\.?|\bdebit\s+(?:of\s+)?(?:₹|rs\.?|inr)',
     caseSensitive: false,
   );
 

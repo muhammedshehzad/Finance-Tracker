@@ -5,6 +5,7 @@ import '../../services/capture/notification_parser.dart';
 import '../../state/providers.dart';
 import '../icons.dart';
 import '../motion.dart';
+import 'captured_payments_page.dart';
 
 /// Turns payment capture on or off and picks which apps it listens to.
 class CaptureSettingsPage extends ConsumerStatefulWidget {
@@ -120,15 +121,28 @@ class _CaptureSettingsPageState extends ConsumerState<CaptureSettingsPage> with 
                             style: t.bodyMedium,
                           ),
                           const SizedBox(height: 12),
-                          enabled
-                              ? OutlinedButton(
+                          if (enabled)
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                FilledButton(
+                                  onPressed: () =>
+                                      Navigator.of(context)
+                                          .push(MaterialPageRoute<void>(builder: (_) => const CapturedPaymentsPage())),
+                                  child: const Text('See captured payments'),
+                                ),
+                                OutlinedButton(
                                   onPressed: channel.openSettings,
                                   child: const Text('Turn off in Android settings'),
-                                )
-                              : FilledButton(
-                                  onPressed: channel.openSettings,
-                                  child: const Text('Allow notification access'),
                                 ),
+                              ],
+                            )
+                          else
+                            FilledButton(
+                              onPressed: channel.openSettings,
+                              child: const Text('Allow notification access'),
+                            ),
                         ],
                       ),
                     ),

@@ -19,10 +19,27 @@ import java.io.File
  */
 class PaymentNotificationListener : NotificationListenerService() {
 
+    override fun onListenerConnected() {
+        instance = this
+    }
+
+    override fun onListenerDisconnected() {
+        if (instance === this) instance = null
+    }
+
+    override fun onDestroy() {
+        if (instance === this) instance = null
+        super.onDestroy()
+    }
+
     /** Never throws: one odd notification must not stop the listener. */
-    override fun onNotificationPosted(sbn: StatusBarNotification) {
+    override fun onNotificationPosted(sbn: StatusBarNotification) = keep(this, sbn)
+
+    /** Keeps [sbn] when it comes from an allowed app and looks like a
+     *  payment. Never throws. */
+    private fun keep(context: Context, sbn: StatusBarNotification) {
         try {
-            if (!allowedPackages(this).contains(sbn.packageName)) return
+            if (!allowedPackages(context).contains(sbn.packageName)) return
             val extras = sbn.notification.extras ?: return
             if ((sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) return
             val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()
@@ -38,7 +55,7 @@ class PaymentNotificationListener : NotificationListenerService() {
                 .put("title", title)
                 .put("text", text)
                 .put("postedAt", sbn.postTime)
-            append(this, json.toString())
+            append(context, json.toString())
         } catch (e: Exception) {
             Log.w(TAG, "Skipped a notification", e)
         }
@@ -86,8 +103,26 @@ class PaymentNotificationListener : NotificationListenerService() {
             if (lines.size > MAX_LINES) file.writeText(lines.takeLast(MAX_LINES).joinToString("\n", postfix = "\n"))
         }
 
+        /** The running listener, while Android has it connected. */
+        @Volatile
+        private var instance: PaymentNotificationListener? = null
+
+        /** Looks again at the notifications still in the shade, so a payment
+         *  that arrived before a fix, or while the listener was asleep, is
+         *  not lost. Ones already kept come back with the same key and are
+         *  skipped on the Dart side. */
+        private fun rescanActive() {
+            val listener = instance ?: return
+            try {
+                listener.activeNotifications?.forEach { listener.keep(listener, it) }
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not read active notifications", e)
+            }
+        }
+
         /** Returns everything stored so far and clears it. */
         fun drain(context: Context): List<String> {
+            rescanActive()
             synchronized(lock) {
                 val file = File(context.filesDir, FILE)
                 if (!file.exists()) return emptyList()

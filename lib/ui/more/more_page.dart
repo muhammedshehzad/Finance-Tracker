@@ -119,11 +119,16 @@ class MorePage extends ConsumerWidget {
             title: const Text('Payment capture'),
             subtitle: const Text('Pick up payments from Google Pay, PhonePe and bank SMS'),
             onTap: () => open(const CaptureSettingsPage()),
-            trailing: IconButton(
-              tooltip: 'Captured payments',
-              icon: const AppIcon(AppIcons.inbox),
-              onPressed: () => open(const CapturedPaymentsPage()),
-            ),
+          ),
+          ListTile(
+            leading: const AppIcon(AppIcons.inbox),
+            title: const Text('Captured payments'),
+            subtitle: Text(switch (ref.watch(pendingCapturesProvider).asData?.value.length ?? 0) {
+              0 => 'Nothing waiting to add',
+              1 => '1 payment waiting to add',
+              final n => '$n payments waiting to add',
+            }),
+            onTap: () => open(const CapturedPaymentsPage()),
           ),
           ListTile(
             leading: const AppIcon(AppIcons.recurring),

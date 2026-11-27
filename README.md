@@ -76,7 +76,7 @@ flutter analyze
 flutter test
 ```
 
-128 tests cover the receipt, voice and notification parsers, monthly insights, savings goals, app lock, automatic backup to a folder and to Google Drive, how Gemini's answers are checked, spotting payments you already have, saving several from one screenshot, money formatting, the recurring schedule, the database and its migrations, backup and restore, and the Excel importer end to end, plus a smoke test that opens every screen with data in it. To re-render the screens in light and dark, run `flutter test test_screens --update-goldens` and look in `test_screens/out/`.
+131 tests cover the receipt, voice and notification parsers, monthly insights, savings goals, app lock, automatic backup to a folder and to Google Drive, how Gemini's answers are checked, spotting payments you already have, saving several from one screenshot, money formatting, the recurring schedule, the database and its migrations, backup and restore, and the Excel importer end to end, plus a smoke test that opens every screen with data in it. To re-render the screens in light and dark, run `flutter test test_screens --update-goldens` and look in `test_screens/out/`.
 
 ## Installing on your phone
 
