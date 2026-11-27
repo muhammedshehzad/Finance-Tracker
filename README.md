@@ -32,6 +32,7 @@
 - [Project structure](#project-structure)
 - [Permissions and privacy](#permissions-and-privacy)
 - [Roadmap](#roadmap)
+- [Copyright](#copyright)
 
 ## Features
 
@@ -187,3 +188,9 @@ On Android 13 and later, the notification access switch is greyed out for sidelo
 ## Roadmap
 
 - Test payment capture with more banks and phones. Canara Bank SMS is confirmed on a real device; other banks are covered by unit tests only.
+
+## Copyright
+
+Copyright 2026 Muhammed Shehzad. All rights reserved.
+
+This code is not licensed for use, copying, modification or distribution.
