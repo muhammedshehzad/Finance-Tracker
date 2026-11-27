@@ -76,6 +76,7 @@ class _AutoBackupPageState extends ConsumerState<AutoBackupPage> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: SwapIn(
+                              alignment: Alignment.centerLeft,
                               value: s.on,
                               child: Text(
                                 s.on ? 'Backing up every week' : 'Automatic backup is off',

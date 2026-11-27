@@ -10,15 +10,19 @@ import 'package:finance_tracker/data/db/app_database.dart';
 import 'package:finance_tracker/data/finance_repository.dart';
 import 'package:finance_tracker/data/models/account.dart';
 import 'package:finance_tracker/data/models/captured_payment.dart';
+import 'package:finance_tracker/data/models/goal.dart';
 import 'package:finance_tracker/data/models/recurring_rule.dart';
 import 'package:finance_tracker/data/models/txn.dart';
 import 'package:finance_tracker/services/capture/capture_channel.dart';
 import 'package:finance_tracker/services/capture/notification_parser.dart';
 import 'package:finance_tracker/state/providers.dart';
+import 'package:finance_tracker/ui/backup/auto_backup_page.dart';
 import 'package:finance_tracker/ui/capture/capture_settings_page.dart';
 import 'package:finance_tracker/ui/capture/captured_payments_page.dart';
+import 'package:finance_tracker/ui/goals/goals_page.dart';
 import 'package:finance_tracker/ui/home_shell.dart';
 import 'package:finance_tracker/ui/import/import_page.dart';
+import 'package:finance_tracker/ui/stats/insights_page.dart';
 import 'package:finance_tracker/ui/theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -101,6 +105,28 @@ Future<FinanceRepository> _seed() async {
       note: 'Lent to Arif',
     ),
   );
+  // Last month, for insights.
+  DateTime last(int day) => DateTime(now.year, now.month - 1, day.clamp(1, 28), 13);
+  for (final (cat, rupees, day) in [
+    ('Rent', 18000, 2),
+    ('Food', 1900, 5),
+    ('Shopping', 6400, 8),
+    ('Groceries', 2300, 10),
+    ('Food', 820, 20),
+  ]) {
+    await repo.saveTxn(
+      Txn(type: TxnType.expense, amount: rupees * 100, date: last(day), accountId: bank, categoryId: cats[cat]),
+    );
+  }
+  final trip = await repo.saveGoal(
+    Goal(name: 'Goa trip', emoji: '✈️', target: 4000000, targetDate: DateTime(now.year + 1, 3, 15), createdAt: now),
+  );
+  await repo.addGoalEntry(GoalEntry(goalId: trip, amount: 1500000, date: d(20, 9), note: 'Bonus'));
+  await repo.addGoalEntry(GoalEntry(goalId: trip, amount: 300000, date: d(2, 9)));
+  final fund = await repo.saveGoal(
+    Goal(name: 'Emergency fund', emoji: '🛟', target: 20000000, createdAt: now.subtract(const Duration(days: 1))),
+  );
+  await repo.addGoalEntry(GoalEntry(goalId: fund, amount: 6200000, date: d(10, 9)));
   await repo.setBudget(FinanceRepository.overallBudgetKey, 4000000);
   await repo.setBudget(cats['Food']!, 600000);
   await repo.setBudget(cats['Shopping']!, 200000);
@@ -301,6 +327,22 @@ void main() {
       await shot('16_captured_payments');
       nav.push(MaterialPageRoute<void>(builder: (_) => const CaptureSettingsPage()));
       await shot('17_capture_settings');
+      nav.push(MaterialPageRoute<void>(builder: (_) => const GoalsPage()));
+      await shot('18_goals');
+      await tester.tap(find.text('Goa trip'));
+      await shot('19_goal_detail');
+      await tester.tap(find.widgetWithText(FilledButton, 'Put in'));
+      await shot('20_goal_put_in');
+      nav.pop();
+      await settle();
+      nav.push(
+        MaterialPageRoute<void>(
+          builder: (_) => InsightsPage(month: DateTime(DateTime.now().year, DateTime.now().month)),
+        ),
+      );
+      await shot('21_insights');
+      nav.push(MaterialPageRoute<void>(builder: (_) => const AutoBackupPage()));
+      await shot('22_auto_backup');
     });
   }
 }

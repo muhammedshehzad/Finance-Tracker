@@ -135,10 +135,13 @@ class AnimatedBar extends StatelessWidget {
 /// Cross-fades between two versions of a small piece of content, such as a
 /// month name or a button label, keyed by [value].
 class SwapIn<T> extends StatelessWidget {
-  const SwapIn({super.key, required this.value, required this.child});
+  const SwapIn({super.key, required this.value, required this.child, this.alignment = Alignment.center});
 
   final T value;
   final Widget child;
+
+  /// Where the content sits in the space it is given.
+  final AlignmentGeometry alignment;
 
   @override
   Widget build(BuildContext context) {
@@ -146,6 +149,7 @@ class SwapIn<T> extends StatelessWidget {
       duration: Motion.of(context, Motion.short),
       switchInCurve: Motion.curve,
       switchOutCurve: Curves.easeIn,
+      layoutBuilder: (current, previous) => Stack(alignment: alignment, children: [...previous, ?current]),
       transitionBuilder: (child, animation) => FadeTransition(
         opacity: animation,
         child: ScaleTransition(scale: Tween(begin: 0.96, end: 1.0).animate(animation), child: child),

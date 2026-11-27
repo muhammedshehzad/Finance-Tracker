@@ -38,6 +38,7 @@
 
 - **Recurring payments**: rent, EMIs, subscriptions and salary wait under *Due now* until you confirm, or record themselves if you prefer. A reminder fires before each one.
 - **Views**: daily list, calendar, month by month, budgets with a pace marker, a stats donut by category, and search across every entry.
+- **Monthly insights**: how this month compares with the same days of last month, which category rose or fell most, what you kept of your income, the daily average and where it's heading, the biggest spend and the place you paid most often.
 - **Accounts**: cash, bank, wallet, credit card and money lent to others, with opening balances and net worth.
 - **Budgets**: an overall monthly limit plus limits per category.
 - **Savings goals**: put money aside toward a trip or a fund, see how far along it is, and with a date, what to put in each month. A goal only keeps track, so balances and spending don't change.
@@ -75,7 +76,7 @@ flutter analyze
 flutter test
 ```
 
-88 tests cover the receipt, voice and notification parsers, how Gemini's answers are checked, spotting payments you already have, saving several from one screenshot, money formatting, the recurring schedule, the database and its migrations, backup and restore, and the Excel importer end to end, plus a smoke test that opens every screen with data in it. To re-render the screens in light and dark, run `flutter test test_screens --update-goldens` and look in `test_screens/out/`.
+116 tests cover the receipt, voice and notification parsers, monthly insights, savings goals, app lock, automatic backup, how Gemini's answers are checked, spotting payments you already have, saving several from one screenshot, money formatting, the recurring schedule, the database and its migrations, backup and restore, and the Excel importer end to end, plus a smoke test that opens every screen with data in it. To re-render the screens in light and dark, run `flutter test test_screens --update-goldens` and look in `test_screens/out/`.
 
 ## Installing on your phone
 

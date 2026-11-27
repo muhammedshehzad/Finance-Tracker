@@ -21,6 +21,7 @@ import '../services/capture/notification_parser.dart';
 import '../services/category_matcher.dart';
 import '../services/import/import_planner.dart';
 import '../services/import/import_service.dart';
+import '../services/insights_service.dart';
 import '../services/lock/app_lock_service.dart';
 import '../services/recurring_service.dart';
 import '../services/reminder_service.dart';
@@ -502,3 +503,18 @@ class AutoBackup extends AsyncNotifier<AutoBackupStatus> {
 
 /// See [AutoBackup].
 final autoBackupProvider = AsyncNotifierProvider<AutoBackup, AutoBackupStatus>(AutoBackup.new);
+
+/// What a month's entries show against the month before.
+final insightsProvider = FutureProvider.autoDispose.family<MonthInsights, DateTime>((ref, month) async {
+  ref.watch(dbRevisionProvider);
+  final repo = ref.watch(repositoryProvider);
+  final previous = DateTime(month.year, month.month - 1);
+  final categories = await repo.categories(includeArchived: true);
+  return InsightsService.build(
+    month: month,
+    now: DateTime.now(),
+    thisMonth: await repo.txnsBetween(month, startOfNextMonth(month)),
+    lastMonth: await repo.txnsBetween(previous, month),
+    categoryNames: {for (final c in categories) c.id!: c.name},
+  );
+});

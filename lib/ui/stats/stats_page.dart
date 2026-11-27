@@ -12,6 +12,7 @@ import '../icons.dart';
 import '../motion.dart';
 import '../widgets/common.dart';
 import '../widgets/txn_tile.dart';
+import 'insights_page.dart';
 
 /// Spending or income by category for the selected month.
 class StatsPage extends ConsumerStatefulWidget {
@@ -63,6 +64,7 @@ class _StatsPageState extends ConsumerState<StatsPage> {
                   return ListView(
                     padding: const EdgeInsets.only(bottom: 24),
                     children: [
+                      InsightsCard(month: month),
                       SizedBox(
                         height: 220,
                         child: Stack(
