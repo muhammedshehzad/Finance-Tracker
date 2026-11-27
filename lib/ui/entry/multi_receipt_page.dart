@@ -344,11 +344,12 @@ class _RowEditorState extends State<_RowEditor> {
             leading: const Icon(Icons.event_outlined),
             title: Text(fullDateFormat.format(_date)),
             onTap: () async {
+              final now = DateTime.now();
               final d = await showDatePicker(
                 context: context,
-                initialDate: _date,
+                initialDate: _date.isAfter(now) ? now : _date,
                 firstDate: DateTime(2000),
-                lastDate: DateTime.now(),
+                lastDate: now,
               );
               if (d != null) setState(() => _date = DateTime(d.year, d.month, d.day, _date.hour, _date.minute));
             },
