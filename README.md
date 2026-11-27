@@ -40,6 +40,7 @@
 - **Views**: daily list, calendar, month by month, budgets with a pace marker, a stats donut by category, and search across every entry.
 - **Accounts**: cash, bank, wallet, credit card and money lent to others, with opening balances and net worth.
 - **Budgets**: an overall monthly limit plus limits per category.
+- **Savings goals**: put money aside toward a trip or a fund, see how far along it is, and with a date, what to put in each month. A goal only keeps track, so balances and spending don't change.
 - **Backup and restore**: all your data in one file you can keep in Drive, and back on a new phone in two taps. Automatic backup saves one every week to a folder you pick, keeping the newest four, and Android's own backup can copy the entries to your Google account.
 - **Export**: a CSV of every entry, ready for Sheets or Excel.
 - **App lock**: asks for your fingerprint, face or phone PIN when the app opens, and again after a minute away. It uses the phone's own screen lock, so nothing new to remember.

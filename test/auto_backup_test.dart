@@ -64,7 +64,7 @@ void main() {
     expect(s.nextAt, monday.add(const Duration(days: 7)));
     expect(folder.files.keys, ['finance-tracker-auto-2026-11-23_0930.json']);
     expect(folder.keptAsked, AutoBackupService.keep);
-    expect(jsonDecode(folder.files.values.single), containsPair('tables', isA<Map>()));
+    expect(jsonDecode(folder.files.values.single), containsPair('tables', isA<Map<String, Object?>>()));
   });
 
   test('a cancelled picker leaves it off', () async {

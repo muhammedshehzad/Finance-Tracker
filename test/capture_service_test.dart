@@ -124,12 +124,15 @@ void main() {
     // Everything added after schema 1.
     await first.db.execute('DROP TABLE captured_payments');
     await first.db.execute('DROP TABLE settings');
+    await first.db.execute('DROP TABLE goal_entries');
+    await first.db.execute('DROP TABLE goals');
     await first.db.setVersion(1);
     await first.close();
 
     final upgraded = FinanceRepository(await AppDatabase.open(factory: databaseFactoryFfi, path: path));
     expect(await upgraded.capturedPayments(), isEmpty);
     expect(await upgraded.setting('app_lock'), isNull);
+    expect(await upgraded.goals(), isEmpty);
     expect(await upgraded.accounts(), isNotEmpty, reason: 'existing data kept');
   });
 }

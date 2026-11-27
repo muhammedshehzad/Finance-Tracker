@@ -12,7 +12,7 @@ class AppDatabase {
 
   final Database db;
 
-  static const schemaVersion = 3;
+  static const schemaVersion = 4;
   static const fileName = 'finance_tracker.db';
 
   static Future<AppDatabase> open({DatabaseFactory? factory, String? path}) async {
@@ -27,6 +27,7 @@ class AppDatabase {
           await _createV1(db);
           await _createV2(db);
           await _createV3(db);
+          await _createV4(db);
           await seedDefaults(db);
         },
         onUpgrade: _migrate,
@@ -132,9 +133,35 @@ class AppDatabase {
     await db.execute('CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
   }
 
+  /// v4: savings goals and the money put in and taken out of them.
+  static Future<void> _createV4(Database db) async {
+    final batch = db.batch();
+    batch.execute('''
+      CREATE TABLE goals (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        emoji TEXT NOT NULL,
+        target INTEGER NOT NULL CHECK (target > 0),
+        target_date INTEGER,
+        archived INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL
+      )''');
+    batch.execute('''
+      CREATE TABLE goal_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        goal_id INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
+        amount INTEGER NOT NULL CHECK (amount != 0),
+        date INTEGER NOT NULL,
+        note TEXT NOT NULL DEFAULT ''
+      )''');
+    batch.execute('CREATE INDEX idx_goal_entries_goal ON goal_entries(goal_id, date)');
+    await batch.commit(noResult: true);
+  }
+
   static Future<void> _migrate(Database db, int from, int to) async {
     if (from < 2) await _createV2(db);
     if (from < 3) await _createV3(db);
+    if (from < 4) await _createV4(db);
   }
 
   Future<void> close() => db.close();

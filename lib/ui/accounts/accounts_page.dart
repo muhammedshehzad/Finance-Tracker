@@ -5,6 +5,7 @@ import '../../core/money.dart';
 import '../../data/finance_repository.dart';
 import '../../data/models/account.dart';
 import '../../state/providers.dart';
+import '../goals/goals_page.dart';
 import '../icons.dart';
 import '../motion.dart';
 import '../theme.dart';
@@ -55,6 +56,7 @@ class AccountsPage extends ConsumerWidget {
                       ),
                     ),
                   ),
+                const _GoalsSummary(),
                 const SizedBox(height: 8),
                 for (final kind in AccountKind.values)
                   for (final a in accounts.where((a) => a.kind == kind))
@@ -64,6 +66,39 @@ class AccountsPage extends ConsumerWidget {
           },
         ),
       ),
+    );
+  }
+}
+
+/// How much is set aside toward savings goals, leading to them. Hidden
+/// until there is a goal, so it never adds clutter for nothing.
+class _GoalsSummary extends ConsumerWidget {
+  const _GoalsSummary();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final goals = ref.watch(goalsProvider).value ?? const [];
+    final saved = goals.fold<int>(0, (sum, g) => sum + g.saved);
+    final target = goals.fold<int>(0, (sum, g) => sum + g.goal.target);
+    return AnimatedSize(
+      duration: Motion.of(context, Motion.medium),
+      curve: Motion.curve,
+      child: goals.isEmpty
+          ? const SizedBox(width: double.infinity)
+          : Card(
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              clipBehavior: Clip.antiAlias,
+              child: ListTile(
+                leading: const AppIcon(AppIcons.goal),
+                title: const Text('Savings goals'),
+                subtitle: Text(
+                  '${formatMoney(saved)} set aside of ${formatMoney(target)}, '
+                  'in ${goals.length} ${goals.length == 1 ? 'goal' : 'goals'}',
+                ),
+                trailing: const AppIcon(AppIcons.next, size: 20),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const GoalsPage())),
+              ),
+            ),
     );
   }
 }

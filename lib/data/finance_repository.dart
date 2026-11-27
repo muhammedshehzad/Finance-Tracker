@@ -5,6 +5,7 @@ import 'db/app_database.dart';
 import 'models/account.dart';
 import 'models/captured_payment.dart';
 import 'models/category.dart';
+import 'models/goal.dart';
 import 'models/recurring_rule.dart';
 import 'models/txn.dart';
 
@@ -370,4 +371,53 @@ class FinanceRepository {
     final v = Sqflite.firstIntValue(await _db.rawQuery('SELECT MIN(date) FROM transactions'));
     return v == null ? null : startOfDay(DateTime.fromMillisecondsSinceEpoch(v));
   }
+
+  // Savings goals.
+
+  /// Goals with what's saved toward each, newest first; archived ones only
+  /// when [archived] is true.
+  Future<List<GoalProgress>> goals({bool archived = false}) async {
+    final rows = await _db.rawQuery(
+      'SELECT g.*, COALESCE(SUM(e.amount), 0) AS saved FROM goals g '
+      'LEFT JOIN goal_entries e ON e.goal_id = g.id WHERE g.archived = ? '
+      'GROUP BY g.id ORDER BY g.created_at DESC, g.id DESC',
+      [archived ? 1 : 0],
+    );
+    return [for (final r in rows) GoalProgress(Goal.fromMap(r), r['saved']! as int)];
+  }
+
+  /// One goal with what's saved, or null when it no longer exists.
+  Future<GoalProgress?> goal(int id) async {
+    final rows = await _db.rawQuery(
+      'SELECT g.*, (SELECT COALESCE(SUM(amount), 0) FROM goal_entries WHERE goal_id = g.id) AS saved '
+      'FROM goals g WHERE g.id = ?',
+      [id],
+    );
+    return rows.isEmpty ? null : GoalProgress(Goal.fromMap(rows.first), rows.first['saved']! as int);
+  }
+
+  /// Inserts or updates a goal and returns its id.
+  Future<int> saveGoal(Goal g) async {
+    if (g.id == null) return _db.insert('goals', g.toMap());
+    await _db.update('goals', g.toMap(), where: 'id = ?', whereArgs: [g.id]);
+    return g.id!;
+  }
+
+  /// Deletes a goal and its history.
+  Future<void> deleteGoal(int id) => _db.delete('goals', where: 'id = ?', whereArgs: [id]);
+
+  /// Money put into and taken out of a goal, newest first.
+  Future<List<GoalEntry>> goalEntries(int goalId) async {
+    final rows = await _db.query(
+      'goal_entries',
+      where: 'goal_id = ?',
+      whereArgs: [goalId],
+      orderBy: 'date DESC, id DESC',
+    );
+    return rows.map(GoalEntry.fromMap).toList();
+  }
+
+  Future<int> addGoalEntry(GoalEntry e) => _db.insert('goal_entries', e.toMap());
+
+  Future<void> deleteGoalEntry(int id) => _db.delete('goal_entries', where: 'id = ?', whereArgs: [id]);
 }

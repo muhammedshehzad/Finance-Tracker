@@ -2,6 +2,7 @@ import 'package:finance_tracker/data/db/app_database.dart';
 import 'package:finance_tracker/data/finance_repository.dart';
 import 'package:finance_tracker/data/models/account.dart';
 import 'package:finance_tracker/data/models/category.dart';
+import 'package:finance_tracker/data/models/goal.dart';
 import 'package:finance_tracker/data/models/txn.dart';
 import 'package:finance_tracker/main.dart';
 import 'package:finance_tracker/state/providers.dart';
@@ -39,6 +40,10 @@ void main() {
       await repo.setBudget(FinanceRepository.overallBudgetKey, 2000000);
       await repo.setBudget(food, 300000);
       await repo.saveTxn(Txn(type: TxnType.income, amount: 5000000, date: now, accountId: bank, categoryId: salary));
+      final goal = await repo.saveGoal(
+        Goal(name: 'Goa trip', target: 3000000, targetDate: DateTime(now.year + 1, 3), createdAt: now),
+      );
+      await repo.addGoalEntry(GoalEntry(goalId: goal, amount: 1200000, date: now));
     });
 
     Future<void> settle() async {
@@ -67,12 +72,28 @@ void main() {
     }
     expect(find.text('Recurring payments'), findsOneWidget);
 
-    for (final page in ['Recurring payments', 'Categories', 'Budgets']) {
+    for (final page in ['Recurring payments', 'Categories', 'Budgets', 'Automatic backup']) {
       await tester.tap(find.text(page).first);
       await settle();
       await tester.pageBack();
       await settle();
     }
+
+    await tester.tap(find.text('Savings goals').first);
+    await settle();
+    expect(find.text('Goa trip'), findsOneWidget);
+    await tester.tap(find.text('Goa trip'));
+    await settle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Put in'));
+    await settle();
+    await tester.enterText(find.widgetWithText(TextFormField, 'Amount'), '3000');
+    await tester.tap(find.widgetWithText(FilledButton, 'Put in').last);
+    await settle();
+    expect(find.text('₹15,000'), findsOneWidget, reason: '₹12,000 plus ₹3,000');
+    await tester.pageBack();
+    await settle();
+    await tester.pageBack();
+    await settle();
 
     await tester.tap(find.text('Transactions').last);
     await settle();

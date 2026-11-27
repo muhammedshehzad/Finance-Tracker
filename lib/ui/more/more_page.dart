@@ -21,6 +21,7 @@ import '../budgets/budget_settings_page.dart';
 import '../capture/capture_settings_page.dart';
 import '../capture/captured_payments_page.dart';
 import '../categories/categories_page.dart';
+import '../goals/goals_page.dart';
 import '../icons.dart';
 import '../import/import_page.dart';
 import '../recurring/recurring_page.dart';
@@ -168,6 +169,12 @@ class MorePage extends ConsumerWidget {
             leading: const AppIcon(AppIcons.budget),
             title: const Text('Budgets'),
             onTap: () => open(const BudgetSettingsPage()),
+          ),
+          ListTile(
+            leading: const AppIcon(AppIcons.goal),
+            title: const Text('Savings goals'),
+            subtitle: const Text('Put money aside toward a trip, a phone or a fund'),
+            onTap: () => open(const GoalsPage()),
           ),
           ListTile(
             leading: const AppIcon(AppIcons.importFile),

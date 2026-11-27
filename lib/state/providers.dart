@@ -7,6 +7,7 @@ import '../data/finance_repository.dart';
 import '../data/models/account.dart';
 import '../data/models/captured_payment.dart';
 import '../data/models/category.dart';
+import '../data/models/goal.dart';
 import '../data/models/recurring_rule.dart';
 import '../data/models/txn.dart';
 import '../data/models/txn_draft.dart';
@@ -350,6 +351,30 @@ class FinanceActions {
     return posted;
   }
 
+  /// Inserts or updates a savings goal and returns its id.
+  Future<int> saveGoal(Goal g) async {
+    final id = await _repo.saveGoal(g);
+    _changed();
+    return id;
+  }
+
+  /// Deletes a goal and its history.
+  Future<void> deleteGoal(int id) async {
+    await _repo.deleteGoal(id);
+    _changed();
+  }
+
+  /// Puts money into a goal (positive) or takes it out (negative).
+  Future<void> addGoalEntry(GoalEntry e) async {
+    await _repo.addGoalEntry(e);
+    _changed();
+  }
+
+  Future<void> deleteGoalEntry(int id) async {
+    await _repo.deleteGoalEntry(id);
+    _changed();
+  }
+
   /// Replaces all data with a backup, then refreshes every screen and the
   /// reminders.
   Future<void> restoreBackup(String backup) async {
@@ -372,6 +397,30 @@ class FinanceActions {
     }
   }
 }
+
+/// Savings goals that are still open, newest first.
+final goalsProvider = FutureProvider<List<GoalProgress>>((ref) async {
+  ref.watch(dbRevisionProvider);
+  return ref.watch(repositoryProvider).goals();
+});
+
+/// Goals that were archived.
+final archivedGoalsProvider = FutureProvider<List<GoalProgress>>((ref) async {
+  ref.watch(dbRevisionProvider);
+  return ref.watch(repositoryProvider).goals(archived: true);
+});
+
+/// One goal with what's saved toward it; null once it's deleted.
+final goalProvider = FutureProvider.autoDispose.family<GoalProgress?, int>((ref, id) async {
+  ref.watch(dbRevisionProvider);
+  return ref.watch(repositoryProvider).goal(id);
+});
+
+/// The money put into and taken out of one goal.
+final goalEntriesProvider = FutureProvider.autoDispose.family<List<GoalEntry>, int>((ref, id) async {
+  ref.watch(dbRevisionProvider);
+  return ref.watch(repositoryProvider).goalEntries(id);
+});
 
 /// See [FinanceActions].
 final actionsProvider = Provider<FinanceActions>(FinanceActions.new);
