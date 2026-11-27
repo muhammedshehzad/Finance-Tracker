@@ -29,7 +29,7 @@
 
 | | How it works |
 |---|---|
-| 📸 **Screenshot** | Pick a Google Pay, PhonePe, Paytm or bank receipt. Gemini reads the amount, payee, date and UPI reference, or on-device OCR does when Gemini is off or offline, and the screenshot stays on the entry. The same UPI reference is never added twice. |
+| 📸 **Screenshot** | Pick a Google Pay, PhonePe, Paytm or bank receipt. Gemini reads the amount, payee, date and UPI reference, or on-device OCR does when Gemini is off or offline, and the screenshot stays on the entry. A payment history screenshot adds every payment on it in one go, with ones you already have left unticked. The same UPI reference is never added twice. |
 | 🎙️ **Voice** | Say *"paid 450 for lunch and 120 for auto in cash"* and get two drafts to check. Gemini writes down what you said, even in mixed English and Hindi, and the phone's own recogniser takes over offline. Understands rupees, k, thousand, lakh, lending and card bills. |
 | 🔔 **Notifications** | Google Pay, PhonePe, Paytm and BHIM payments, plus bank SMS if you switch it on, wait under Captured payments with the category already guessed. OTPs, requests, reminders and failed payments are dropped. |
 | 📊 **Excel import** | Bring in a year of history from an `.xlsx` or `.csv` file. Columns are detected for you, you review how accounts and categories map before anything is written, and importing the same file again adds nothing. |
@@ -73,7 +73,7 @@ flutter analyze
 flutter test
 ```
 
-81 tests cover the receipt, voice and notification parsers, how Gemini's answers are checked, money formatting, the recurring schedule, the database and its migrations, backup and restore, and the Excel importer end to end, plus a smoke test that opens every screen with data in it. To re-render the screens in light and dark, run `flutter test test_screens --update-goldens` and look in `test_screens/out/`.
+88 tests cover the receipt, voice and notification parsers, how Gemini's answers are checked, spotting payments you already have, saving several from one screenshot, money formatting, the recurring schedule, the database and its migrations, backup and restore, and the Excel importer end to end, plus a smoke test that opens every screen with data in it. To re-render the screens in light and dark, run `flutter test test_screens --update-goldens` and look in `test_screens/out/`.
 
 ## Installing on your phone
 

@@ -55,4 +55,23 @@ void main() {
   test('an empty answer has no amount, so the phone reads the screenshot', () {
     expect(receiptFromGemini({}, now: now).hasAmount, isFalse);
   });
+
+  test('a payment history becomes one result per readable row', () {
+    final results = receiptsFromGemini({
+      'payments': [
+        {'amount': 90, 'direction': 'paid', 'payee': 'Swiggy', 'dateTime': '2026-11-25'},
+        {'amount': null, 'payee': 'Cut off row'},
+        {'amount': 1500, 'direction': 'received', 'payee': 'Ameen K', 'dateTime': '2026-11-24T09:15'},
+      ],
+    }, now: now);
+    expect(results.map((r) => r.payee), ['Swiggy', 'Ameen K']);
+    expect(results.first.hasTime, isFalse);
+    expect(results.first.date, DateTime(2026, 11, 25));
+    expect(results.last.hasTime, isTrue);
+    expect(results.last.direction, ReceiptDirection.received);
+  });
+
+  test('an answer without a payments list gives nothing', () {
+    expect(receiptsFromGemini({'amount': 90}, now: now), isEmpty);
+  });
 }

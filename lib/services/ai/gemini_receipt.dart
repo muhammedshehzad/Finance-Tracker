@@ -2,8 +2,18 @@ import 'dart:convert';
 
 import '../receipt_parser.dart';
 
-/// Turns Gemini's JSON answer about a payment screenshot into a
-/// [ReceiptParseResult].
+/// Every payment in Gemini's answer that has a readable amount, top to
+/// bottom as the screenshot shows them.
+List<ReceiptParseResult> receiptsFromGemini(Map<String, Object?> json, {required DateTime now}) {
+  final payments = json['payments'];
+  if (payments is! List) return const [];
+  return [
+    for (final p in payments)
+      if (p is Map<String, Object?>) receiptFromGemini(p, now: now),
+  ].where((r) => r.hasAmount).toList();
+}
+
+/// Turns one payment from Gemini's JSON answer into a [ReceiptParseResult].
 ///
 /// Gemini is told to leave out what it can't see, but each field is still
 /// checked here, so an odd answer becomes a missing field rather than a
@@ -27,6 +37,7 @@ ReceiptParseResult receiptFromGemini(Map<String, Object?> json, {required DateTi
       _ => ReceiptStatus.unknown,
     },
     app: _text(json['app']),
+    hasTime: _text(json['dateTime'])?.contains('T') ?? false,
     rawText: jsonEncode(json),
   );
 }

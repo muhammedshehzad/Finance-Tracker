@@ -23,6 +23,7 @@ class ReceiptParseResult {
     this.direction = ReceiptDirection.unknown,
     this.status = ReceiptStatus.unknown,
     this.app,
+    this.hasTime = true,
     required this.rawText,
   });
 
@@ -40,6 +41,10 @@ class ReceiptParseResult {
 
   /// Google Pay, PhonePe, Paytm and so on, when recognisable.
   final String? app;
+
+  /// False when the screenshot showed only a day, as list views do. The
+  /// [date] then falls at midnight.
+  final bool hasTime;
   final String rawText;
 
   bool get hasAmount => amountPaise != null;

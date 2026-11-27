@@ -9,13 +9,17 @@ import 'package:path_provider/path_provider.dart';
 import 'ai/gemini_service.dart';
 import 'receipt_parser.dart';
 
-/// A stored screenshot and what was read from it.
+/// A stored screenshot and the payments read from it.
 class ScannedReceipt {
-  const ScannedReceipt({required this.imagePath, required this.result});
+  const ScannedReceipt({required this.imagePath, required this.results});
 
   /// Copy of the screenshot inside the app's own storage.
   final String imagePath;
-  final ReceiptParseResult result;
+
+  /// One payment for a receipt, several for a payment history. Never empty.
+  final List<ReceiptParseResult> results;
+
+  ReceiptParseResult get result => results.first;
 }
 
 /// Picks a payment screenshot, keeps a private copy, and reads it.
@@ -35,21 +39,22 @@ class ReceiptScanner {
     final picked = await _picker.pickImage(source: source, imageQuality: 92);
     if (picked == null) return null;
     final stored = await _storeCopy(File(picked.path));
-    return ScannedReceipt(imagePath: stored.path, result: await read(stored.path));
+    return ScannedReceipt(imagePath: stored.path, results: await read(stored.path));
   }
 
-  /// Reads the screenshot with Gemini, falling back to the phone.
-  Future<ReceiptParseResult> read(String imagePath) async {
+  /// Reads the screenshot with Gemini, falling back to the phone, which
+  /// reads one payment only.
+  Future<List<ReceiptParseResult>> read(String imagePath) async {
     final ai = gemini;
     if (ai != null) {
       try {
-        final result = await ai.readReceipt(await File(imagePath).readAsBytes(), _mimeType(imagePath));
-        if (result != null && result.hasAmount) return result;
+        final results = await ai.readReceipts(await File(imagePath).readAsBytes(), _mimeType(imagePath));
+        if (results != null && results.isNotEmpty) return results;
       } catch (e, st) {
         log('Gemini could not read the screenshot, reading it on the phone', error: e, stackTrace: st);
       }
     }
-    return parser.parse(await recognise(imagePath));
+    return [parser.parse(await recognise(imagePath))];
   }
 
   static String _mimeType(String path) => switch (p.extension(path).toLowerCase()) {

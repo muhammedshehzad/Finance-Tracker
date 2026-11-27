@@ -26,13 +26,15 @@ class GeminiService {
 
   static const _receiptInstruction = '''
 You read screenshots of Indian UPI payment apps such as Google Pay, PhonePe, Paytm, BHIM and bank apps.
+A screenshot shows either one payment's details or a list of payments, such as a payment history.
+Return one item in payments for each payment shown, top to bottom. Leave out a row that is cut off so its amount can't be read.
 Report only what the screenshot shows. Use null for anything that isn't visible, and never guess.
 - amount: the payment amount in rupees as a number, e.g. 4000 for ₹4,000 or 249.5 for ₹249.50.
-- direction: "paid" when the phone's owner sent money, "received" when they got it.
+- direction: "paid" when the phone's owner sent money, "received" when they got it, as the text, arrow, sign or colour of the row shows.
 - payee: the other party's name exactly as shown, without the UPI id.
 - payeeUpiId: the other party's UPI id, such as name@okaxis.
 - upiRef: the UPI transaction id, UTR or reference number, without spaces.
-- dateTime: the payment's local date and time as YYYY-MM-DDTHH:MM.
+- dateTime: the payment's local date and time as YYYY-MM-DDTHH:MM, or YYYY-MM-DD when only the day is shown. Work out "Today", "Yesterday", weekday names and dates without a year from today's date, which the request gives, choosing the most recent such day that isn't in the future.
 - status: "success", "failed" or "pending" as the screen shows.
 - app: the app that made the screenshot, e.g. Google Pay.''';
 
@@ -43,7 +45,9 @@ Write every amount as digits with no currency sign or commas: "two thousand five
 Keep item, people and place names as said, and join separate items with " and ".
 Reply with the transcript only. Reply with nothing if there is no speech.''';
 
-  static final _receiptSchema = Schema.object(
+  static final _receiptSchema = Schema.object(properties: {'payments': Schema.array(items: _paymentSchema)});
+
+  static final _paymentSchema = Schema.object(
     properties: {
       'amount': Schema.number(nullable: true),
       'direction': Schema.enumString(enumValues: ['paid', 'received', 'unknown']),
@@ -86,21 +90,25 @@ Reply with the transcript only. Reply with nothing if there is no speech.''';
     ),
   );
 
-  /// Reads a payment screenshot. [mimeType] is image/jpeg, image/png or
-  /// image/webp.
-  Future<ReceiptParseResult?> readReceipt(Uint8List image, String mimeType) async {
+  /// Reads every payment in a screenshot, one for a receipt and several for
+  /// a payment history. [mimeType] is image/jpeg, image/png or image/webp.
+  Future<List<ReceiptParseResult>?> readReceipts(Uint8List image, String mimeType) async {
     if (!await isAvailable()) return null;
+    final now = DateTime.now();
+    final today = '${now.year}-${_two(now.month)}-${_two(now.day)}';
     final response = await _model(_receiptInstruction, schema: _receiptSchema)
         .generateContent([
-          Content.multi([TextPart('Read this payment screenshot.'), InlineDataPart(mimeType, image)]),
+          Content.multi([TextPart('Today is $today. Read this payment screenshot.'), InlineDataPart(mimeType, image)]),
         ])
         .timeout(_timeout);
     final text = response.text;
     if (text == null) return null;
     final json = jsonDecode(text);
     if (json is! Map<String, Object?>) return null;
-    return receiptFromGemini(json, now: DateTime.now());
+    return receiptsFromGemini(json, now: now);
   }
+
+  static String _two(int n) => n.toString().padLeft(2, '0');
 
   /// Turns a recorded voice note into text for the voice parser. Returns
   /// null when nothing was said.
