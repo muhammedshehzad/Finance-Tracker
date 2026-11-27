@@ -5,6 +5,8 @@ import '../../core/dates.dart';
 import '../../core/money.dart';
 import '../../data/models/txn.dart';
 import '../../state/providers.dart';
+import '../icons.dart';
+import '../motion.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/txn_tile.dart';
@@ -35,7 +37,7 @@ class DailyView extends ConsumerWidget {
               builder: (l) {
                 if (list.isEmpty) {
                   return const EmptyState(
-                    icon: Icons.edit_note,
+                    icon: AppIcons.note,
                     message: 'Nothing recorded this month.\nTap + to add, or use the mic or a payment screenshot.',
                   );
                 }
@@ -76,7 +78,7 @@ class DayGroupedList extends StatelessWidget {
           if (t.type == TxnType.income) income += t.amount;
           if (t.type == TxnType.expense) expense += t.amount;
         }
-        return Column(
+        final group = Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
@@ -95,6 +97,13 @@ class DayGroupedList extends StatelessWidget {
             for (final t in items) TxnTile(txn: t, lookups: lookups),
           ],
         );
+        // The first screenful arrives one day after another; the rest as is.
+        return i < 6
+            ? FadeIn(
+                delay: Duration(milliseconds: 40 * i),
+                child: group,
+              )
+            : group;
       },
     );
   }

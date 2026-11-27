@@ -11,6 +11,8 @@ import '../../services/receipt_batch.dart';
 import '../../services/receipt_parser.dart';
 import '../../services/receipt_scanner.dart';
 import '../../state/providers.dart';
+import '../icons.dart';
+import '../motion.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import 'category_picker.dart';
@@ -190,7 +192,7 @@ class _MultiReceiptPageState extends ConsumerState<MultiReceiptPage> {
     return Scaffold(
       appBar: AppBar(title: Text(rows == null ? 'Reading payments…' : '${rows.length} payments found')),
       body: rows == null
-          ? const Center(child: CircularProgressIndicator())
+          ? const AppLoader()
           : AsyncBody(
               value: lookups,
               builder: (l) => ListView(
@@ -199,6 +201,7 @@ class _MultiReceiptPageState extends ConsumerState<MultiReceiptPage> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                     child: DropdownButtonFormField<int>(
+                      icon: const AppIcon(AppIcons.dropDown, size: 20),
                       initialValue: _accountId,
                       isExpanded: true,
                       decoration: const InputDecoration(labelText: 'Account for all of them'),
@@ -224,7 +227,7 @@ class _MultiReceiptPageState extends ConsumerState<MultiReceiptPage> {
             onPressed: count == 0 || _saving || _accountId == null ? null : _save,
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text(count == 1 ? 'Save 1 entry' : 'Save $count entries'),
+              child: SwapIn(value: count, child: Text(count == 1 ? 'Save 1 entry' : 'Save $count entries')),
             ),
           ),
         ),
@@ -338,7 +341,7 @@ class _RowEditorState extends State<_RowEditor> {
           ),
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.category_outlined),
+            leading: const AppIcon(AppIcons.categories),
             title: Text(category?.label ?? 'Pick a category'),
             onTap: () async {
               final c = await showCategoryPicker(
@@ -351,7 +354,7 @@ class _RowEditorState extends State<_RowEditor> {
           ),
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.event_outlined),
+            leading: const AppIcon(AppIcons.calendar),
             title: Text(fullDateFormat.format(_date)),
             onTap: () async {
               final now = DateTime.now();

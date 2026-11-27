@@ -14,6 +14,7 @@ import '../../data/models/txn_draft.dart';
 import '../../services/receipt_scanner.dart';
 import '../../services/recurring_engine.dart';
 import '../../state/providers.dart';
+import '../icons.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import 'category_picker.dart';
@@ -296,10 +297,10 @@ class _TransactionFormPageState extends ConsumerState<TransactionFormPage> {
           if (_isNew && widget.fromRule == null)
             IconButton(
               tooltip: 'Fill from payment screenshot',
-              icon: const Icon(Icons.document_scanner_outlined),
+              icon: const AppIcon(AppIcons.scan),
               onPressed: _scanReceipt,
             ),
-          if (!_isNew) IconButton(tooltip: 'Delete', icon: const Icon(Icons.delete_outline), onPressed: _delete),
+          if (!_isNew) IconButton(tooltip: 'Delete', icon: const AppIcon(AppIcons.delete), onPressed: _delete),
         ],
       ),
       body: AsyncBody(value: lookups, builder: _form),
@@ -324,7 +325,7 @@ class _TransactionFormPageState extends ConsumerState<TransactionFormPage> {
           if (_warning != null)
             Card(
               color: Theme.of(context).colorScheme.errorContainer,
-              child: ListTile(leading: const Icon(Icons.warning_amber), title: Text(_warning!)),
+              child: ListTile(leading: const AppIcon(AppIcons.warning), title: Text(_warning!)),
             ),
           SegmentedButton<TxnType>(
             showSelectedIcon: false,
@@ -369,7 +370,7 @@ class _TransactionFormPageState extends ConsumerState<TransactionFormPage> {
                   decoration: InputDecoration(
                     labelText: 'Category',
                     errorText: field.errorText,
-                    suffixIcon: const Icon(Icons.arrow_drop_down),
+                    suffixIcon: const AppIcon(AppIcons.dropDown, size: 20),
                   ),
                   child: Text(category?.label ?? 'Choose'),
                 ),
@@ -377,6 +378,7 @@ class _TransactionFormPageState extends ConsumerState<TransactionFormPage> {
             ),
           if (_type != TxnType.transfer) const SizedBox(height: 12),
           DropdownButtonFormField<int>(
+            icon: const AppIcon(AppIcons.dropDown, size: 20),
             isExpanded: true,
             style: Theme.of(context).textTheme.bodyLarge,
             key: ValueKey('from-$_type-$_accountId'),
@@ -389,6 +391,7 @@ class _TransactionFormPageState extends ConsumerState<TransactionFormPage> {
           if (_type == TxnType.transfer) ...[
             const SizedBox(height: 12),
             DropdownButtonFormField<int>(
+              icon: const AppIcon(AppIcons.dropDown, size: 20),
               isExpanded: true,
               style: Theme.of(context).textTheme.bodyLarge,
               key: ValueKey('to-$_toAccountId'),
@@ -416,7 +419,7 @@ class _TransactionFormPageState extends ConsumerState<TransactionFormPage> {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  icon: const Icon(Icons.calendar_today, size: 18),
+                  icon: const AppIcon(AppIcons.calendarDay, size: 18),
                   label: Text(fullDateFormat.format(_date)),
                   onPressed: _pickDate,
                 ),
@@ -424,7 +427,7 @@ class _TransactionFormPageState extends ConsumerState<TransactionFormPage> {
               const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton.icon(
-                  icon: const Icon(Icons.schedule, size: 18),
+                  icon: const AppIcon(AppIcons.time, size: 18),
                   label: Text(timeFormat.format(_date)),
                   onPressed: _pickTime,
                 ),
@@ -450,8 +453,8 @@ class _TransactionFormPageState extends ConsumerState<TransactionFormPage> {
               spacing: 8,
               runSpacing: 4,
               children: [
-                if (_payee != null) Chip(avatar: const Icon(Icons.person_outline, size: 18), label: Text(_payee!)),
-                if (_upiRef != null) Chip(avatar: const Icon(Icons.tag, size: 18), label: Text('UPI $_upiRef')),
+                if (_payee != null) Chip(avatar: const AppIcon(AppIcons.person, size: 18), label: Text(_payee!)),
+                if (_upiRef != null) Chip(avatar: const AppIcon(AppIcons.tag, size: 18), label: Text('UPI $_upiRef')),
               ],
             ),
           ],
@@ -469,10 +472,11 @@ class _TransactionFormPageState extends ConsumerState<TransactionFormPage> {
           if (_isNew && widget.fromRule == null) ...[
             const SizedBox(height: 12),
             DropdownButtonFormField<Frequency?>(
+              icon: const AppIcon(AppIcons.dropDown, size: 20),
               isExpanded: true,
               style: Theme.of(context).textTheme.bodyLarge,
               initialValue: _repeat,
-              decoration: const InputDecoration(labelText: 'Repeat', prefixIcon: Icon(Icons.repeat)),
+              decoration: const InputDecoration(labelText: 'Repeat', prefixIcon: AppIcon(AppIcons.repeat)),
               items: [
                 const DropdownMenuItem(value: null, child: Text('Does not repeat')),
                 for (final f in Frequency.values) DropdownMenuItem(value: f, child: Text(f.label)),
@@ -535,12 +539,12 @@ class _AttachmentPreview extends StatelessWidget {
             width: 48,
             height: 48,
             fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => const Icon(Icons.broken_image),
+            errorBuilder: (_, _, _) => const AppIcon(AppIcons.brokenImage),
           ),
         ),
         title: const Text('Payment screenshot'),
         subtitle: const Text('Tap to view'),
-        trailing: IconButton(tooltip: 'Remove screenshot', icon: const Icon(Icons.close), onPressed: onRemove),
+        trailing: IconButton(tooltip: 'Remove screenshot', icon: const AppIcon(AppIcons.close), onPressed: onRemove),
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (_) => Scaffold(

@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../data/models/category.dart';
 import '../../state/providers.dart';
+import '../icons.dart';
 import '../widgets/common.dart';
 
 /// Expense and income categories, to add, edit or archive.
@@ -31,7 +32,7 @@ class CategoriesPage extends ConsumerWidget {
               final kind = DefaultTabController.of(context).index == 0 ? CategoryKind.expense : CategoryKind.income;
               Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => CategoryFormPage(kind: kind)));
             },
-            child: const Icon(Icons.add),
+            child: const AppIcon(AppIcons.add),
           ),
           body: AsyncBody(
             value: lookups,
@@ -169,7 +170,7 @@ class _CategoryFormPageState extends ConsumerState<CategoryFormPage> {
                     child: CircleAvatar(
                       radius: 18,
                       backgroundColor: Color(c),
-                      child: c == _color ? const Icon(Icons.check, color: Colors.black87, size: 18) : null,
+                      child: c == _color ? const AppIcon(AppIcons.check, color: Colors.black87, size: 18) : null,
                     ),
                   ),
               ],

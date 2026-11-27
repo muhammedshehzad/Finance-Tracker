@@ -185,6 +185,7 @@ tool/         turns google-services.json into build settings
 - **Local first.** SQLite through `sqflite`. No account and no server. Gemini is optional, and every Gemini answer is checked field by field and shown to you before anything is saved.
 - **Riverpod** holds the repository and every read model. All writes go through `FinanceActions`, which bumps a revision the read providers watch, so one save refreshes every screen. Tests swap the database and the notification channel through provider overrides.
 - **Parsers are pure Dart.** Receipts, voice, notifications and spreadsheets are parsed without plugins, so every message shape is unit tested.
+- **One look and one pace.** Every icon comes from Hugeicons through `ui/icons.dart`, and every animation, the loader included, takes its timing from `ui/motion.dart`. Animations turn off when Android's "Remove animations" setting is on.
 - **Capture comes in two halves.** A Kotlin `NotificationListenerService` keeps only notifications from the apps you allowed that mention an amount, and drops OTPs before anything touches disk. Dart parses them, pairs an app notification with its bank SMS, and waits for you.
 
 ## Permissions

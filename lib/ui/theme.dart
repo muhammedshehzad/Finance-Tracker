@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../data/models/txn.dart';
+import 'icons.dart';
 
 const _seed = Color(0xFF00897B);
 
@@ -34,6 +35,11 @@ ThemeData buildTheme(Brightness brightness) {
     ),
     dividerTheme: DividerThemeData(color: scheme.outlineVariant.withValues(alpha: 0.6), space: 1),
     listTileTheme: const ListTileThemeData(contentPadding: EdgeInsets.symmetric(horizontal: 16)),
+    // Back and close buttons in app bars use the same icon set as the rest.
+    actionIconTheme: ActionIconThemeData(
+      backButtonIconBuilder: (_) => const AppIcon(AppIcons.back),
+      closeButtonIconBuilder: (_) => const AppIcon(AppIcons.close),
+    ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: scheme.surfaceContainer,
       indicatorColor: scheme.secondaryContainer,

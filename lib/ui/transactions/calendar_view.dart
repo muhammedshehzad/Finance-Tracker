@@ -5,6 +5,7 @@ import '../../core/dates.dart';
 import '../../core/money.dart';
 import '../../state/providers.dart';
 import '../entry/transaction_form_page.dart';
+import '../icons.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import 'daily_view.dart';
@@ -123,7 +124,7 @@ class CalendarView extends ConsumerWidget {
             ListTile(
               title: Text(fullDateFormat.format(day), style: Theme.of(context).textTheme.titleMedium),
               trailing: FilledButton.tonalIcon(
-                icon: const Icon(Icons.add),
+                icon: const AppIcon(AppIcons.add),
                 label: const Text('Add'),
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -140,7 +141,7 @@ class CalendarView extends ConsumerWidget {
             ),
             Expanded(
               child: txns.isEmpty
-                  ? const EmptyState(icon: Icons.event_available, message: 'Nothing recorded on this day.')
+                  ? const EmptyState(icon: AppIcons.calendarFree, message: 'Nothing recorded on this day.')
                   : DayGroupedList(txns: txns, lookups: lookups, padBottom: false),
             ),
           ],

@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/money.dart';
 import '../../data/models/account.dart';
 import '../../state/providers.dart';
+import '../icons.dart';
 
 /// Adds or edits an account, including its opening balance.
 class AccountFormPage extends ConsumerStatefulWidget {
@@ -83,6 +84,7 @@ class _AccountFormPageState extends ConsumerState<AccountFormPage> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<AccountKind>(
+              icon: const AppIcon(AppIcons.dropDown, size: 20),
               isExpanded: true,
               style: Theme.of(context).textTheme.bodyLarge,
               initialValue: _kind,

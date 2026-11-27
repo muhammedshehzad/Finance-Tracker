@@ -7,6 +7,8 @@ import '../../data/finance_repository.dart';
 import '../../data/models/txn.dart';
 import '../../state/providers.dart';
 import '../budgets/budget_settings_page.dart';
+import '../icons.dart';
+import '../motion.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 
@@ -60,7 +62,7 @@ class BudgetView extends ConsumerWidget {
                       ),
                     ),
                     TextButton.icon(
-                      icon: const Icon(Icons.tune),
+                      icon: const AppIcon(AppIcons.filter),
                       label: const Text('Set budgets'),
                       onPressed: () =>
                           Navigator.of(context)
@@ -129,15 +131,7 @@ class BudgetBar extends StatelessWidget {
             builder: (context, c) => Stack(
               clipBehavior: Clip.none,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: LinearProgressIndicator(
-                    value: ratio.clamp(0, 1),
-                    minHeight: 12,
-                    color: color,
-                    backgroundColor: color.withValues(alpha: 0.15),
-                  ),
-                ),
+                AnimatedBar(value: ratio, height: 12, color: color, backgroundColor: color.withValues(alpha: 0.15)),
                 if (todayFraction != null)
                   Positioned(
                     left: c.maxWidth * todayFraction! - 1,
@@ -184,7 +178,7 @@ class _Comparison extends StatelessWidget {
       text = 'Spending is $pct% of last month (${formatMoney(last.expense)}).';
     }
     return Card(
-      child: ListTile(leading: const Icon(Icons.compare_arrows), title: Text(text)),
+      child: ListTile(leading: const AppIcon(AppIcons.compare), title: Text(text)),
     );
   }
 }

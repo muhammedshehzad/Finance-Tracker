@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../data/models/txn.dart';
 import '../../state/providers.dart';
+import '../icons.dart';
 import '../widgets/common.dart';
 import '../widgets/txn_tile.dart';
 
@@ -66,8 +67,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       body: AsyncBody(
         value: lookups,
         builder: (l) {
-          if (!_searched) return const EmptyState(icon: Icons.search, message: 'Type at least two letters.');
-          if (_results.isEmpty) return const EmptyState(icon: Icons.search_off, message: 'No matches.');
+          if (!_searched) return const EmptyState(icon: AppIcons.search, message: 'Type at least two letters.');
+          if (_results.isEmpty) return const EmptyState(icon: AppIcons.noResults, message: 'No matches.');
           return ListView.builder(
             itemCount: _results.length,
             itemBuilder: (_, i) => TxnTile(txn: _results[i], lookups: l, showDate: true),

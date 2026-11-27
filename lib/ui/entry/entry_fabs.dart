@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../icons.dart';
 import 'receipt_entry.dart';
 import 'transaction_form_page.dart';
 import 'voice_entry_sheet.dart';
@@ -29,7 +30,7 @@ class EntryFabs extends ConsumerWidget {
               tooltip: 'Add by voice',
               color: scheme.onPrimaryContainer,
               onPressed: () => showVoiceEntrySheet(context),
-              icon: const Icon(Icons.mic_none),
+              icon: const AppIcon(AppIcons.mic),
             ),
             GestureDetector(
               onLongPress: () => startReceiptEntry(context, ref, source: ImageSource.camera),
@@ -37,7 +38,7 @@ class EntryFabs extends ConsumerWidget {
                 tooltip: 'Add from payment screenshot (hold for camera)',
                 color: scheme.onPrimaryContainer,
                 onPressed: () => startReceiptEntry(context, ref),
-                icon: const Icon(Icons.document_scanner_outlined),
+                icon: const AppIcon(AppIcons.scan),
               ),
             ),
             const SizedBox(width: 4),
@@ -50,7 +51,7 @@ class EntryFabs extends ConsumerWidget {
                 ),
                 onPressed: () =>
                     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const TransactionFormPage())),
-                icon: const Icon(Icons.add),
+                icon: const AppIcon(AppIcons.add),
                 label: const Text('Add'),
               ),
             ),

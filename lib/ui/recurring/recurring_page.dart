@@ -8,6 +8,7 @@ import '../../data/models/txn.dart';
 import '../../services/recurring_engine.dart';
 import '../../state/providers.dart';
 import '../entry/transaction_form_page.dart';
+import '../icons.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import 'recurring_form_page.dart';
@@ -28,7 +29,7 @@ class RecurringPage extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         tooltip: 'Add recurring payment',
         onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const RecurringFormPage())),
-        child: const Icon(Icons.add),
+        child: const AppIcon(AppIcons.add),
       ),
       body: AsyncBody(
         value: rules,
@@ -37,7 +38,7 @@ class RecurringPage extends ConsumerWidget {
           builder: (l) {
             if (all.isEmpty) {
               return const EmptyState(
-                icon: Icons.event_repeat,
+                icon: AppIcons.recurring,
                 message: 'No recurring payments yet.\nAdd rent, EMIs or salary and get a reminder before each one.',
               );
             }
@@ -132,7 +133,7 @@ class RecurringPage extends ConsumerWidget {
       if (r.autoPost) 'records itself',
     ].join(' · ');
     return ListTile(
-      leading: Icon(r.active ? Icons.event_repeat : Icons.pause_circle_outline),
+      leading: AppIcon(r.active ? AppIcons.recurring : AppIcons.paused),
       title: Text(title),
       subtitle: Text(details),
       trailing: Text(formatMoney(r.amount), style: TextStyle(color: MoneyColors.forType(context, r.type))),

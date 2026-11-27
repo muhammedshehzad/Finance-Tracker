@@ -3,6 +3,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../services/capture/notification_parser.dart';
 import '../../state/providers.dart';
+import '../icons.dart';
+import '../motion.dart';
 
 /// Turns payment capture on or off and picks which apps it listens to.
 class CaptureSettingsPage extends ConsumerStatefulWidget {
@@ -86,7 +88,7 @@ class _CaptureSettingsPageState extends ConsumerState<CaptureSettingsPage> with 
               ),
             )
           : enabled == null
-          ? const Center(child: CircularProgressIndicator())
+          ? const AppLoader()
           : ListView(
               padding: const EdgeInsets.only(bottom: 32),
               children: [
@@ -101,8 +103,8 @@ class _CaptureSettingsPageState extends ConsumerState<CaptureSettingsPage> with 
                         children: [
                           Row(
                             children: [
-                              Icon(
-                                enabled ? Icons.check_circle : Icons.notifications_off_outlined,
+                              AppIcon(
+                                enabled ? AppIcons.done : AppIcons.notificationOff,
                                 color: enabled ? scheme.onPrimaryContainer : muted,
                               ),
                               const SizedBox(width: 12),
@@ -134,7 +136,7 @@ class _CaptureSettingsPageState extends ConsumerState<CaptureSettingsPage> with 
                 ),
                 if (!enabled)
                   const ListTile(
-                    leading: Icon(Icons.lock_outline),
+                    leading: AppIcon(AppIcons.privacy),
                     title: Text('Switch greyed out?'),
                     subtitle: Text(
                       'Android blocks this for apps installed from an APK. Open App info for Finance Tracker, '
@@ -165,7 +167,7 @@ class _CaptureSettingsPageState extends ConsumerState<CaptureSettingsPage> with 
                   ),
                 section('Good to know'),
                 const ListTile(
-                  leading: Icon(Icons.phone_android),
+                  leading: AppIcon(AppIcons.phone),
                   title: Text('Stays on this phone'),
                   subtitle: Text(
                     'Only notifications from the apps switched on here, and only ones that mention an amount, are read. '
@@ -173,7 +175,7 @@ class _CaptureSettingsPageState extends ConsumerState<CaptureSettingsPage> with 
                   ),
                 ),
                 const ListTile(
-                  leading: Icon(Icons.notifications_paused_outlined),
+                  leading: AppIcon(AppIcons.notificationPaused),
                   title: Text('Some payments send no notification'),
                   subtitle: Text(
                     'UPI apps do not always notify for money you send. Turning on bank SMS covers those, '

@@ -19,6 +19,7 @@ import '../budgets/budget_settings_page.dart';
 import '../capture/capture_settings_page.dart';
 import '../capture/captured_payments_page.dart';
 import '../categories/categories_page.dart';
+import '../icons.dart';
 import '../import/import_page.dart';
 import '../recurring/recurring_page.dart';
 import '../widgets/common.dart';
@@ -139,60 +140,60 @@ class MorePage extends ConsumerWidget {
       body: ListView(
         children: [
           ListTile(
-            leading: const Icon(Icons.notifications_active_outlined),
+            leading: const AppIcon(AppIcons.capture),
             title: const Text('Payment capture'),
             subtitle: const Text('Pick up payments from Google Pay, PhonePe and bank SMS'),
             onTap: () => open(const CaptureSettingsPage()),
             trailing: IconButton(
               tooltip: 'Captured payments',
-              icon: const Icon(Icons.inbox_outlined),
+              icon: const AppIcon(AppIcons.inbox),
               onPressed: () => open(const CapturedPaymentsPage()),
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.event_repeat),
+            leading: const AppIcon(AppIcons.recurring),
             title: const Text('Recurring payments'),
             subtitle: const Text('Rent, EMIs, subscriptions, salary'),
             onTap: () => open(const RecurringPage()),
           ),
           ListTile(
-            leading: const Icon(Icons.category_outlined),
+            leading: const AppIcon(AppIcons.categories),
             title: const Text('Categories'),
             subtitle: const Text('Names, icons and the words voice entry listens for'),
             onTap: () => open(const CategoriesPage()),
           ),
           ListTile(
-            leading: const Icon(Icons.savings_outlined),
+            leading: const AppIcon(AppIcons.budget),
             title: const Text('Budgets'),
             onTap: () => open(const BudgetSettingsPage()),
           ),
           ListTile(
-            leading: const Icon(Icons.upload_file_outlined),
+            leading: const AppIcon(AppIcons.importFile),
             title: const Text('Import from Excel'),
             subtitle: const Text('Bring in past entries from an .xlsx or .csv file'),
             onTap: () => open(const ImportPage()),
           ),
           ListTile(
-            leading: const Icon(Icons.file_download_outlined),
+            leading: const AppIcon(AppIcons.exportFile),
             title: const Text('Export to CSV'),
             subtitle: const Text('Opens in Excel or Google Sheets'),
             onTap: () => _export(context, ref),
           ),
           ListTile(
-            leading: const Icon(Icons.backup_outlined),
+            leading: const AppIcon(AppIcons.backup),
             title: const Text('Back up'),
             subtitle: const Text('Save all your data to one file, e.g. in Google Drive'),
             onTap: () => _backUp(context, ref),
           ),
           ListTile(
-            leading: const Icon(Icons.restore),
+            leading: const AppIcon(AppIcons.restore),
             title: const Text('Restore from a backup'),
             subtitle: const Text('Replaces what is in the app. Screenshots aren\'t included'),
             onTap: () => _restore(context, ref),
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.auto_awesome_outlined),
+            leading: const AppIcon(AppIcons.ai),
             title: const Text('Reading screenshots and voice'),
             subtitle: Text(
               GeminiConfig.isConfigured
@@ -202,7 +203,7 @@ class MorePage extends ConsumerWidget {
             onTap: () => _explainReading(context),
           ),
           const ListTile(
-            leading: Icon(Icons.lock_outline),
+            leading: AppIcon(AppIcons.privacy),
             title: Text('Your entries stay on this phone'),
             subtitle: Text('Back up regularly: uninstalling the app deletes its data.'),
           ),

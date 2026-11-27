@@ -8,6 +8,8 @@ import '../../core/money.dart';
 import '../../data/models/category.dart';
 import '../../data/models/txn.dart';
 import '../../state/providers.dart';
+import '../icons.dart';
+import '../motion.dart';
 import '../widgets/common.dart';
 import '../widgets/txn_tile.dart';
 
@@ -51,7 +53,7 @@ class _StatsPageState extends ConsumerState<StatsPage> {
                 value: lookups,
                 builder: (l) {
                   if (t.isEmpty) {
-                    return const EmptyState(icon: Icons.pie_chart_outline, message: 'Nothing recorded for this month.');
+                    return const EmptyState(icon: AppIcons.stats, message: 'Nothing recorded for this month.');
                   }
                   final sum = t.fold<int>(0, (s, c) => s + c.total);
                   final slices = [
@@ -66,7 +68,14 @@ class _StatsPageState extends ConsumerState<StatsPage> {
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            CustomPaint(size: const Size(200, 200), painter: _DonutPainter(slices)),
+                            TweenAnimationBuilder<double>(
+                              key: ValueKey('$month $_type'),
+                              tween: Tween(begin: 0, end: 1),
+                              duration: Motion.of(context, Motion.long),
+                              curve: Motion.curve,
+                              builder: (context, progress, _) =>
+                                  CustomPaint(size: const Size(200, 200), painter: _DonutPainter(slices, progress)),
+                            ),
                             Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -74,7 +83,7 @@ class _StatsPageState extends ConsumerState<StatsPage> {
                                   _type == TxnType.expense ? 'Spent' : 'Received',
                                   style: Theme.of(context).textTheme.labelMedium,
                                 ),
-                                Text(formatMoney(sum), style: Theme.of(context).textTheme.titleLarge),
+                                AnimatedMoney(sum, style: Theme.of(context).textTheme.titleLarge),
                               ],
                             ),
                           ],
@@ -147,14 +156,10 @@ class _CategoryShareTile extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(3),
-                          child: LinearProgressIndicator(
-                            value: share,
-                            minHeight: 4,
-                            color: color,
-                            backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                          ),
+                        child: AnimatedBar(
+                          value: share,
+                          color: color,
+                          backgroundColor: theme.colorScheme.surfaceContainerHighest,
                         ),
                       ),
                       SizedBox(
@@ -184,8 +189,11 @@ class _Slice {
 }
 
 class _DonutPainter extends CustomPainter {
-  _DonutPainter(this.slices);
+  _DonutPainter(this.slices, this.progress);
   final List<_Slice> slices;
+
+  /// How much of the ring is drawn, 0 to 1, so it sweeps in when shown.
+  final double progress;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -195,7 +203,7 @@ class _DonutPainter extends CustomPainter {
     final rect = Rect.fromCircle(center: size.center(Offset.zero), radius: size.shortestSide / 2 - stroke / 2);
     var start = -math.pi / 2;
     for (final s in slices) {
-      final sweep = 2 * math.pi * s.value / total;
+      final sweep = 2 * math.pi * progress * s.value / total;
       final paint = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = stroke
@@ -206,7 +214,7 @@ class _DonutPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_DonutPainter old) => old.slices != slices;
+  bool shouldRepaint(_DonutPainter old) => old.slices != slices || old.progress != progress;
 }
 
 /// All entries of one category in one month.
@@ -227,7 +235,7 @@ class CategoryMonthPage extends ConsumerWidget {
         value: txnsValue,
         builder: (txns) {
           final l = lookups.asData?.value;
-          if (l == null) return const Center(child: CircularProgressIndicator());
+          if (l == null) return const AppLoader();
           return ListView.builder(
             itemCount: txns.length,
             itemBuilder: (_, i) => TxnTile(txn: txns[i], lookups: l, showDate: true),

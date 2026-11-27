@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/dates.dart';
-import '../../core/money.dart';
 import '../../state/providers.dart';
+import '../icons.dart';
+import '../motion.dart';
 import '../theme.dart';
 
 /// "< Nov 2026 >" switcher bound to the selected month.
@@ -19,12 +20,15 @@ class MonthSwitcher extends ConsumerWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(tooltip: 'Previous month', icon: const Icon(Icons.chevron_left), onPressed: notifier.previous),
+        IconButton(tooltip: 'Previous month', icon: const AppIcon(AppIcons.previous), onPressed: notifier.previous),
         GestureDetector(
           onTap: () => notifier.set(DateTime.now()),
-          child: Text(monthYearFormat.format(month), style: Theme.of(context).textTheme.titleMedium),
+          child: SwapIn(
+            value: month,
+            child: Text(monthYearFormat.format(month), style: Theme.of(context).textTheme.titleMedium),
+          ),
         ),
-        IconButton(tooltip: 'Next month', icon: const Icon(Icons.chevron_right), onPressed: notifier.next),
+        IconButton(tooltip: 'Next month', icon: const AppIcon(AppIcons.next), onPressed: notifier.next),
       ],
     );
   }
@@ -45,28 +49,29 @@ class SummaryRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       child: Row(
         children: [
-          _cell(context, 'Income', formatMoney(income), MoneyColors.income(context)),
-          _cell(context, 'Expenses', formatMoney(expense), MoneyColors.expense(context)),
-          _cell(context, netLabel, formatMoney(net), MoneyColors.forSigned(context, net)),
+          _cell(context, 'Income', income, MoneyColors.income(context)),
+          _cell(context, 'Expenses', expense, MoneyColors.expense(context)),
+          _cell(context, netLabel, net, MoneyColors.forSigned(context, net)),
         ],
       ),
     );
   }
 
-  Widget _cell(BuildContext context, String label, String value, Color color) => Expanded(
+  Widget _cell(BuildContext context, String label, int value, Color color) => Expanded(
     child: Column(
       children: [
         Text(label, style: Theme.of(context).textTheme.labelMedium),
         const SizedBox(height: 4),
         FittedBox(
-          child: Text(value, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: color)),
+          child: AnimatedMoney(value, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: color)),
         ),
       ],
     ),
   );
 }
 
-/// Renders an AsyncValue with simple loading and error states.
+/// Renders an AsyncValue with the app's loader, and fades the content in
+/// once it arrives. A refresh keeps the old content on screen.
 class AsyncBody<T> extends StatelessWidget {
   const AsyncBody({super.key, required this.value, required this.builder});
 
@@ -75,12 +80,13 @@ class AsyncBody<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return value.when(
-      data: builder,
-      loading: () => const Center(child: CircularProgressIndicator()),
+    final child = value.when(
+      data: (data) => KeyedSubtree(key: const ValueKey('data'), child: builder(data)),
+      loading: () => const AppLoader(key: ValueKey('loading')),
       error: (e, st) {
         log('Screen failed to load', error: e, stackTrace: st);
         return const Center(
+          key: ValueKey('error'),
           child: Padding(
             padding: EdgeInsets.all(24),
             child: Text('This screen couldn\'t load. Go back and open it again.', textAlign: TextAlign.center),
@@ -88,32 +94,40 @@ class AsyncBody<T> extends StatelessWidget {
         );
       },
     );
+    return AnimatedSwitcher(
+      duration: Motion.of(context, Motion.medium),
+      switchInCurve: Motion.curve,
+      switchOutCurve: Curves.easeIn,
+      child: child,
+    );
   }
 }
 
 /// A centred icon and message for a screen with nothing to show.
 class EmptyState extends StatelessWidget {
   const EmptyState({super.key, required this.icon, required this.message});
-  final IconData icon;
+  final AppIconData icon;
   final String message;
 
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme.onSurfaceVariant;
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 48, color: color),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: color),
-            ),
-          ],
+      child: FadeIn(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppIcon(icon, size: 48, color: color),
+              const SizedBox(height: 12),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: color),
+              ),
+            ],
+          ),
         ),
       ),
     );

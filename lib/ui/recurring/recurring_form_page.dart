@@ -9,6 +9,7 @@ import '../../data/models/txn.dart';
 import '../../services/recurring_engine.dart';
 import '../../state/providers.dart';
 import '../entry/category_picker.dart';
+import '../icons.dart';
 import '../widgets/common.dart';
 
 /// Adds or edits a recurring payment and its reminder.
@@ -116,7 +117,7 @@ class _RecurringFormPageState extends ConsumerState<RecurringFormPage> {
         title: Text(widget.existing == null ? 'New recurring payment' : 'Recurring payment'),
         actions: [
           if (widget.existing != null)
-            IconButton(tooltip: 'Delete', icon: const Icon(Icons.delete_outline), onPressed: _delete),
+            IconButton(tooltip: 'Delete', icon: const AppIcon(AppIcons.delete), onPressed: _delete),
         ],
       ),
       body: AsyncBody(
@@ -174,6 +175,7 @@ class _RecurringFormPageState extends ConsumerState<RecurringFormPage> {
                   const SizedBox(height: 12),
                 ],
                 DropdownButtonFormField<int>(
+                  icon: const AppIcon(AppIcons.dropDown, size: 20),
                   isExpanded: true,
                   style: Theme.of(context).textTheme.bodyLarge,
                   key: ValueKey('acc-$_accountId'),
@@ -186,6 +188,7 @@ class _RecurringFormPageState extends ConsumerState<RecurringFormPage> {
                 if (_type == TxnType.transfer) ...[
                   const SizedBox(height: 12),
                   DropdownButtonFormField<int>(
+                    icon: const AppIcon(AppIcons.dropDown, size: 20),
                     isExpanded: true,
                     style: Theme.of(context).textTheme.bodyLarge,
                     initialValue: _toAccountId,
@@ -210,6 +213,7 @@ class _RecurringFormPageState extends ConsumerState<RecurringFormPage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: DropdownButtonFormField<Frequency>(
+                        icon: const AppIcon(AppIcons.dropDown, size: 20),
                         isExpanded: true,
                         style: Theme.of(context).textTheme.bodyLarge,
                         initialValue: _frequency,
@@ -225,7 +229,7 @@ class _RecurringFormPageState extends ConsumerState<RecurringFormPage> {
                 const SizedBox(height: 12),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.event),
+                  leading: const AppIcon(AppIcons.calendar),
                   title: const Text('Next due'),
                   subtitle: Text(fullDateFormat.format(_nextDue)),
                   onTap: () async {
@@ -240,12 +244,15 @@ class _RecurringFormPageState extends ConsumerState<RecurringFormPage> {
                 ),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.event_busy),
+                  leading: const AppIcon(AppIcons.calendarEnd),
                   title: const Text('Ends'),
                   subtitle: Text(_endDate == null ? 'Never' : fullDateFormat.format(_endDate!)),
                   trailing: _endDate == null
                       ? null
-                      : IconButton(icon: const Icon(Icons.clear), onPressed: () => setState(() => _endDate = null)),
+                      : IconButton(
+                          icon: const AppIcon(AppIcons.close),
+                          onPressed: () => setState(() => _endDate = null),
+                        ),
                   onTap: () async {
                     final d = await showDatePicker(
                       context: context,
@@ -257,10 +264,11 @@ class _RecurringFormPageState extends ConsumerState<RecurringFormPage> {
                   },
                 ),
                 DropdownButtonFormField<int>(
+                  icon: const AppIcon(AppIcons.dropDown, size: 20),
                   isExpanded: true,
                   style: Theme.of(context).textTheme.bodyLarge,
                   initialValue: _reminderChoices.containsKey(_remind) ? _remind : 1,
-                  decoration: const InputDecoration(labelText: 'Reminder', prefixIcon: Icon(Icons.notifications_none)),
+                  decoration: const InputDecoration(labelText: 'Reminder', prefixIcon: AppIcon(AppIcons.notification)),
                   items: [
                     for (final e in _reminderChoices.entries) DropdownMenuItem(value: e.key, child: Text(e.value)),
                   ],

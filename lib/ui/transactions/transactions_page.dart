@@ -6,6 +6,7 @@ import '../../services/capture/notification_parser.dart';
 import '../../state/providers.dart';
 import '../capture/captured_payments_page.dart';
 import '../entry/entry_fabs.dart';
+import '../icons.dart';
 import '../recurring/recurring_page.dart';
 import '../widgets/common.dart';
 import 'budget_view.dart';
@@ -41,7 +42,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> with Single
         actions: [
           IconButton(
             tooltip: 'Search',
-            icon: const Icon(Icons.search),
+            icon: const AppIcon(AppIcons.search),
             onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SearchPage())),
           ),
         ],
@@ -102,7 +103,7 @@ class _DueBanner extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
           child: Row(
             children: [
-              Icon(Icons.event_repeat, size: 20, color: scheme.onTertiaryContainer),
+              AppIcon(AppIcons.recurring, size: 20, color: scheme.onTertiaryContainer),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -116,7 +117,7 @@ class _DueBanner extends ConsumerWidget {
                 'Review',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(color: scheme.onTertiaryContainer),
               ),
-              Icon(Icons.chevron_right, color: scheme.onTertiaryContainer),
+              AppIcon(AppIcons.next, color: scheme.onTertiaryContainer),
             ],
           ),
         ),
@@ -146,7 +147,7 @@ class _CaptureBanner extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
           child: Row(
             children: [
-              Icon(Icons.notifications_active_outlined, size: 20, color: scheme.onSecondaryContainer),
+              AppIcon(AppIcons.capture, size: 20, color: scheme.onSecondaryContainer),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -160,7 +161,7 @@ class _CaptureBanner extends ConsumerWidget {
                 'Review',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(color: scheme.onSecondaryContainer),
               ),
-              Icon(Icons.chevron_right, color: scheme.onSecondaryContainer),
+              AppIcon(AppIcons.next, color: scheme.onSecondaryContainer),
             ],
           ),
         ),

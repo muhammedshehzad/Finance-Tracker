@@ -5,6 +5,7 @@ import '../../core/money.dart';
 import '../../data/models/txn.dart';
 import '../../state/providers.dart';
 import '../entry/transaction_form_page.dart';
+import '../icons.dart';
 import '../theme.dart';
 import 'common.dart';
 
@@ -64,14 +65,14 @@ class TxnTile extends StatelessWidget {
 
   List<Widget> _sourceIcons(BuildContext context) {
     final icon = switch (txn.source) {
-      TxnSource.screenshot => Icons.receipt_long,
-      TxnSource.voice => Icons.mic_none,
-      TxnSource.recurring => Icons.repeat,
-      TxnSource.imported => Icons.upload_file,
-      TxnSource.notification => Icons.notifications_none,
+      TxnSource.screenshot => AppIcons.screenshot,
+      TxnSource.voice => AppIcons.mic,
+      TxnSource.recurring => AppIcons.repeat,
+      TxnSource.imported => AppIcons.upload,
+      TxnSource.notification => AppIcons.notification,
       TxnSource.manual => null,
     };
     if (icon == null) return const [];
-    return [const SizedBox(width: 6), Icon(icon, size: 14, color: Theme.of(context).colorScheme.primary)];
+    return [const SizedBox(width: 6), AppIcon(icon, size: 14, color: Theme.of(context).colorScheme.primary)];
   }
 }

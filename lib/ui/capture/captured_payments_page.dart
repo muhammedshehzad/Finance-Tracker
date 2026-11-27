@@ -10,6 +10,7 @@ import '../../data/models/txn.dart';
 import '../../services/capture/notification_parser.dart';
 import '../../state/providers.dart';
 import '../entry/transaction_form_page.dart';
+import '../icons.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import 'capture_settings_page.dart';
@@ -29,7 +30,7 @@ class CapturedPaymentsPage extends ConsumerWidget {
         actions: [
           IconButton(
             tooltip: 'Capture settings',
-            icon: const Icon(Icons.tune),
+            icon: const AppIcon(AppIcons.filter),
             onPressed: () =>
                 Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const CaptureSettingsPage())),
           ),
@@ -47,7 +48,7 @@ class CapturedPaymentsPage extends ConsumerWidget {
                   children: const [
                     SizedBox(height: 120),
                     EmptyState(
-                      icon: Icons.notifications_none,
+                      icon: AppIcons.notification,
                       message:
                           'Nothing waiting. Payments from Google Pay, PhonePe, Paytm and BHIM '
                           'notifications show up here for you to add.',
@@ -200,7 +201,7 @@ class _CaptureCard extends ConsumerWidget {
               const SizedBox(height: 10),
               Row(
                 children: [
-                  Icon(Icons.info_outline, size: 16, color: scheme.tertiary),
+                  AppIcon(AppIcons.info, size: 16, color: scheme.tertiary),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(

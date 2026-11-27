@@ -5,6 +5,8 @@ import '../../core/money.dart';
 import '../../data/finance_repository.dart';
 import '../../data/models/account.dart';
 import '../../state/providers.dart';
+import '../icons.dart';
+import '../motion.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/txn_tile.dart';
@@ -25,7 +27,7 @@ class AccountsPage extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         tooltip: 'Add account',
         onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AccountFormPage())),
-        child: const Icon(Icons.add),
+        child: const AppIcon(AppIcons.add),
       ),
       body: AsyncBody(
         value: lookups,
@@ -45,7 +47,7 @@ class AccountsPage extends ConsumerWidget {
                   const Card(
                     margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     child: ListTile(
-                      leading: Icon(Icons.info_outline),
+                      leading: AppIcon(AppIcons.info),
                       title: Text('Set opening balances'),
                       subtitle: Text(
                         'Tap each account and enter what it held on the day you started. '
@@ -80,7 +82,7 @@ class _NetWorthHeader extends StatelessWidget {
         children: [
           Text(label, style: theme.textTheme.labelMedium?.copyWith(color: muted)),
           const SizedBox(height: 2),
-          Text(formatMoney(value), style: theme.textTheme.titleMedium?.copyWith(color: color)),
+          AnimatedMoney(value, style: theme.textTheme.titleMedium?.copyWith(color: color)),
         ],
       ),
     );
@@ -94,8 +96,8 @@ class _NetWorthHeader extends StatelessWidget {
             Text('Net worth', style: theme.textTheme.labelLarge?.copyWith(color: muted)),
             const SizedBox(height: 4),
             FittedBox(
-              child: Text(
-                formatMoney(worth.net),
+              child: AnimatedMoney(
+                worth.net,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: worth.net < 0 ? MoneyColors.expense(context) : null,
@@ -146,17 +148,17 @@ class _AccountTile extends StatelessWidget {
       }
     }
     final icon = switch (account.kind) {
-      AccountKind.cash => Icons.payments_outlined,
-      AccountKind.bank => Icons.account_balance_outlined,
-      AccountKind.wallet => Icons.account_balance_wallet_outlined,
-      AccountKind.creditCard => Icons.credit_card,
-      AccountKind.receivable => Icons.handshake_outlined,
+      AccountKind.cash => AppIcons.cash,
+      AccountKind.bank => AppIcons.bank,
+      AccountKind.wallet => AppIcons.wallet,
+      AccountKind.creditCard => AppIcons.creditCard,
+      AccountKind.receivable => AppIcons.lent,
     };
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: theme.colorScheme.secondaryContainer,
         foregroundColor: theme.colorScheme.onSecondaryContainer,
-        child: Icon(icon, size: 20),
+        child: AppIcon(icon, size: 20),
       ),
       title: Text(account.name),
       subtitle: details.isEmpty ? null : Text(details.join(' · ')),
@@ -186,7 +188,7 @@ class AccountDetailPage extends ConsumerWidget {
           if (account != null)
             IconButton(
               tooltip: 'Edit account',
-              icon: const Icon(Icons.edit_outlined),
+              icon: const AppIcon(AppIcons.edit),
               onPressed: () =>
                   Navigator.of(context)
                       .push(MaterialPageRoute<void>(builder: (_) => AccountFormPage(existing: account))),
@@ -197,21 +199,21 @@ class AccountDetailPage extends ConsumerWidget {
         value: txnsValue,
         builder: (txns) {
           final l = lookups.asData?.value;
-          if (l == null || account == null) return const Center(child: CircularProgressIndicator());
+          if (l == null || account == null) return const AppLoader();
           final balance = balances.asData?.value[accountId] ?? 0;
           return ListView(
             children: [
               ListTile(
                 title: const Text('Balance'),
                 subtitle: Text('Opening balance ${formatMoney(account.openingBalance)}'),
-                trailing: Text(
-                  formatMoney(balance),
+                trailing: AnimatedMoney(
+                  balance,
                   style: Theme.of(context).textTheme.titleLarge
                       ?.copyWith(color: MoneyColors.forSigned(context, balance)),
                 ),
               ),
               const Divider(),
-              if (txns.isEmpty) const EmptyState(icon: Icons.history, message: 'No entries in this account yet.'),
+              if (txns.isEmpty) const EmptyState(icon: AppIcons.history, message: 'No entries in this account yet.'),
               for (final t in txns) TxnTile(txn: t, lookups: l, showDate: true),
             ],
           );

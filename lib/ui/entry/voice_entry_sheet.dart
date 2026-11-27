@@ -12,6 +12,8 @@ import '../../services/voice_parser.dart';
 import '../../services/voice_recorder.dart';
 import '../../services/voice_service.dart';
 import '../../state/providers.dart';
+import '../icons.dart';
+import '../motion.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 
@@ -233,11 +235,14 @@ class _VoiceEntrySheetState extends ConsumerState<VoiceEntrySheet> {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),
-                  IconButton.filled(
-                    iconSize: 28,
-                    tooltip: _listening ? 'Stop' : 'Speak again',
-                    icon: Icon(_listening ? Icons.stop : Icons.mic),
-                    onPressed: _transcribing ? null : (_listening ? _stop : _start),
+                  _Pulse(
+                    active: _listening,
+                    child: IconButton.filled(
+                      iconSize: 28,
+                      tooltip: _listening ? 'Stop' : 'Speak again',
+                      icon: SwapIn(value: _listening, child: AppIcon(_listening ? AppIcons.stop : AppIcons.mic)),
+                      onPressed: _transcribing ? null : (_listening ? _stop : _start),
+                    ),
                   ),
                 ],
               ),
@@ -255,7 +260,7 @@ class _VoiceEntrySheetState extends ConsumerState<VoiceEntrySheet> {
                   helperStyle: TextStyle(color: Theme.of(context).colorScheme.error),
                   suffixIcon: IconButton(
                     tooltip: 'Read this text',
-                    icon: const Icon(Icons.keyboard_return),
+                    icon: const AppIcon(AppIcons.enter),
                     onPressed: _parse,
                   ),
                 ),
@@ -269,7 +274,7 @@ class _VoiceEntrySheetState extends ConsumerState<VoiceEntrySheet> {
                 builder: (l) {
                   if (_drafts.isEmpty) {
                     return EmptyState(
-                      icon: Icons.record_voice_over_outlined,
+                      icon: AppIcons.voice,
                       message: _transcript.text.isEmpty || _listening
                           ? 'Say an amount and what it was for.'
                           : 'No amount found. Try "paid 90 for lunch".',
@@ -409,7 +414,7 @@ class _DraftCardState extends State<_DraftCard> {
                 const Spacer(),
                 if (!d.isValid)
                   Text('Needs a fix', style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12)),
-                IconButton(tooltip: 'Remove', icon: const Icon(Icons.close), onPressed: widget.onRemove),
+                IconButton(tooltip: 'Remove', icon: const AppIcon(AppIcons.close), onPressed: widget.onRemove),
               ],
             ),
             Padding(
@@ -443,6 +448,7 @@ class _DraftCardState extends State<_DraftCard> {
                   const SizedBox(height: 8),
                   if (d.type != TxnType.transfer)
                     DropdownButtonFormField<int>(
+                      icon: const AppIcon(AppIcons.dropDown, size: 20),
                       isExpanded: true,
                       style: Theme.of(context).textTheme.bodyLarge,
                       initialValue: d.categoryId,
@@ -459,6 +465,7 @@ class _DraftCardState extends State<_DraftCard> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<int>(
+                          icon: const AppIcon(AppIcons.dropDown, size: 20),
                           isExpanded: true,
                           style: Theme.of(context).textTheme.bodyLarge,
                           initialValue: d.accountId,
@@ -478,6 +485,7 @@ class _DraftCardState extends State<_DraftCard> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: DropdownButtonFormField<int>(
+                            icon: const AppIcon(AppIcons.dropDown, size: 20),
                             isExpanded: true,
                             style: Theme.of(context).textTheme.bodyLarge,
                             initialValue: d.toAccountId,
@@ -499,6 +507,78 @@ class _DraftCardState extends State<_DraftCard> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// A soft ring that breathes around the mic button while it listens, so it
+/// is clear the app is hearing you.
+class _Pulse extends StatefulWidget {
+  const _Pulse({required this.active, required this.child});
+
+  final bool active;
+  final Widget child;
+
+  @override
+  State<_Pulse> createState() => _PulseState();
+}
+
+class _PulseState extends State<_Pulse> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _sync();
+  }
+
+  @override
+  void didUpdateWidget(_Pulse oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _sync();
+  }
+
+  void _sync() {
+    final animate = widget.active && Motion.of(context, Motion.short) != Duration.zero;
+    if (animate && !_controller.isAnimating) {
+      _controller.repeat();
+    } else if (!animate && _controller.isAnimating) {
+      _controller.stop();
+      _controller.value = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.primary;
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final t = Curves.easeOut.transform(_controller.value);
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              if (widget.active)
+                BoxShadow(
+                  color: color.withValues(alpha: 0.35 * (1 - t)),
+                  spreadRadius: 14 * t,
+                ),
+            ],
+          ),
+          child: child,
+        );
+      },
+      child: widget.child,
     );
   }
 }

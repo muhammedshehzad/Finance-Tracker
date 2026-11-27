@@ -13,6 +13,7 @@ import '../../services/category_matcher.dart';
 import '../../services/receipt_parser.dart';
 import '../../services/receipt_scanner.dart';
 import '../../state/providers.dart';
+import '../motion.dart';
 import '../widgets/common.dart';
 import 'multi_receipt_page.dart';
 import 'transaction_form_page.dart';
@@ -138,7 +139,7 @@ Future<T> _withProgress<T>(BuildContext context, Future<T> work) async {
       context: context,
       barrierDismissible: false,
       builder: (_) => const AlertDialog(
-        content: Row(children: [CircularProgressIndicator(), SizedBox(width: 16), Text('Reading screenshot…')]),
+        content: Row(children: [AppLoader(centered: false), SizedBox(width: 20), Text('Reading screenshot…')]),
       ),
     );
   });

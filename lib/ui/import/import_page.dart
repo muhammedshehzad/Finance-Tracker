@@ -15,6 +15,8 @@ import '../../services/import/import_service.dart';
 import '../../services/import/sheet_reader.dart';
 import '../../services/import/table_parser.dart';
 import '../../state/providers.dart';
+import '../icons.dart';
+import '../motion.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 
@@ -179,7 +181,7 @@ class _ImportPageState extends ConsumerState<ImportPage> {
       child: FilledButton(
         onPressed: n == 0 || _busy ? null : _import,
         child: _busy
-            ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
+            ? const AppLoader(size: 20, centered: false)
             : Text(n == 0 ? 'Nothing to import' : 'Import ${_count(n, 'entry', 'entries')}'),
       ),
     );
@@ -193,7 +195,7 @@ class _ImportPageState extends ConsumerState<ImportPage> {
       children: [
         Align(
           alignment: Alignment.centerLeft,
-          child: Icon(Icons.table_view_outlined, size: 48, color: Theme.of(context).colorScheme.primary),
+          child: AppIcon(AppIcons.table, size: 48, color: Theme.of(context).colorScheme.primary),
         ),
         const SizedBox(height: 16),
         Text('Bring in your past entries', style: t.headlineSmall),
@@ -206,19 +208,19 @@ class _ImportPageState extends ConsumerState<ImportPage> {
         const SizedBox(height: 24),
         _tip(
           context,
-          Icons.ios_share,
+          AppIcons.share,
           'From Money Manager',
           'More, then Export to Excel. Share the file to your phone and pick it here.',
         ),
         _tip(
           context,
-          Icons.view_column_outlined,
+          AppIcons.columns,
           'From your own sheet',
           'One row per entry with at least a date and an amount. Type, category, account and note columns are picked up by their headings.',
         ),
         _tip(
           context,
-          Icons.content_copy_outlined,
+          AppIcons.copy,
           'Safe to run twice',
           'Entries already in the app are skipped, so importing the same file again adds nothing.',
         ),
@@ -229,9 +231,7 @@ class _ImportPageState extends ConsumerState<ImportPage> {
         const SizedBox(height: 24),
         FilledButton.icon(
           onPressed: _busy ? null : _pick,
-          icon: _busy
-              ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
-              : const Icon(Icons.upload_file),
+          icon: _busy ? const AppLoader(size: 18, centered: false) : const AppIcon(AppIcons.upload),
           label: const Text('Choose file'),
           style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
         ),
@@ -239,14 +239,14 @@ class _ImportPageState extends ConsumerState<ImportPage> {
     );
   }
 
-  Widget _tip(BuildContext context, IconData icon, String title, String body) =>
-      ListTile(contentPadding: EdgeInsets.zero, leading: Icon(icon), title: Text(title), subtitle: Text(body));
+  Widget _tip(BuildContext context, AppIconData icon, String title, String body) =>
+      ListTile(contentPadding: EdgeInsets.zero, leading: AppIcon(icon), title: Text(title), subtitle: Text(body));
 
   Widget _mappingView(BuildContext context) {
     final plan = _plan;
     final mapping = _mapping;
     final lookups = ref.watch(lookupsProvider);
-    if (plan == null || mapping == null) return const Center(child: CircularProgressIndicator());
+    if (plan == null || mapping == null) return const AppLoader();
     return AsyncBody(
       value: lookups,
       builder: (l) => ListView(
@@ -256,6 +256,7 @@ class _ImportPageState extends ConsumerState<ImportPage> {
           if (_sheet!.otherSheets.isNotEmpty) ...[
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
+              icon: const AppIcon(AppIcons.dropDown, size: 20),
               isExpanded: true,
               style: Theme.of(context).textTheme.bodyLarge,
               initialValue: _sheet!.name,
@@ -271,6 +272,7 @@ class _ImportPageState extends ConsumerState<ImportPage> {
             children: [
               Expanded(
                 child: DropdownButtonFormField<int?>(
+                  icon: const AppIcon(AppIcons.dropDown, size: 20),
                   key: ValueKey('year-$_year-${_years.length}'),
                   isExpanded: true,
                   style: Theme.of(context).textTheme.bodyLarge,
@@ -289,6 +291,7 @@ class _ImportPageState extends ConsumerState<ImportPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: DropdownButtonFormField<bool>(
+                  icon: const AppIcon(AppIcons.dropDown, size: 20),
                   isExpanded: true,
                   style: Theme.of(context).textTheme.bodyLarge,
                   initialValue: _options.dayFirst,
@@ -384,6 +387,7 @@ class _ImportPageState extends ConsumerState<ImportPage> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: DropdownButtonFormField<String>(
+        icon: const AppIcon(AppIcons.dropDown, size: 20),
         key: ValueKey('acc-$name-$value'),
         isExpanded: true,
         style: Theme.of(context).textTheme.bodyLarge,
@@ -428,6 +432,7 @@ class _ImportPageState extends ConsumerState<ImportPage> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: DropdownButtonFormField<String>(
+        icon: const AppIcon(AppIcons.dropDown, size: 20),
         key: ValueKey('cat-${c.name}-${c.kind.name}-$value'),
         isExpanded: true,
         style: Theme.of(context).textTheme.bodyLarge,
@@ -590,6 +595,7 @@ class _ColumnsCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: DropdownButtonFormField<ImportField>(
+                icon: const AppIcon(AppIcons.dropDown, size: 20),
                 key: ValueKey('col-$i-${columns[i]}'),
                 isExpanded: true,
                 style: Theme.of(context).textTheme.bodyLarge,
@@ -628,7 +634,7 @@ class _ResultView extends StatelessWidget {
       children: [
         Align(
           alignment: Alignment.centerLeft,
-          child: Icon(Icons.check_circle_outline, size: 56, color: Theme.of(context).colorScheme.primary),
+          child: AppIcon(AppIcons.done, size: 56, color: Theme.of(context).colorScheme.primary),
         ),
         const SizedBox(height: 16),
         Text('Imported ${_count(result.imported, 'entry', 'entries')}', style: t.headlineSmall),
@@ -642,7 +648,7 @@ class _ResultView extends StatelessWidget {
         Card.outlined(
           shape: outlinedCardShape(context),
           child: ListTile(
-            leading: const Icon(Icons.account_balance_wallet_outlined),
+            leading: const AppIcon(AppIcons.wallet),
             title: const Text('Check your opening balances'),
             subtitle: const Text(
               'Balances count from what each account held before the first imported entry. '
