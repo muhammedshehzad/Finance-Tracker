@@ -10,13 +10,12 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../core/dates.dart';
 import '../../services/ai/gemini_config.dart';
-import '../../services/backup_service.dart';
 import '../../services/csv_export.dart';
 import '../../services/lock/app_lock_service.dart';
 import '../../state/providers.dart';
 import '../backup/auto_backup_page.dart';
+import '../backup/restore_flow.dart';
 import '../budgets/budget_settings_page.dart';
 import '../capture/capture_settings_page.dart';
 import '../capture/captured_payments_page.dart';
@@ -51,46 +50,19 @@ class MorePage extends ConsumerWidget {
     }
   }
 
-  /// Picks a backup, says what it holds, and replaces the data on a yes.
+  /// Picks a backup file, says what it holds, and replaces the data on a yes.
   Future<void> _restore(BuildContext context, WidgetRef ref) async {
     final picked = await FilePicker.pickFile();
     if (picked == null || !context.mounted) return;
     final String text;
-    final BackupInfo info;
     try {
       text = utf8.decode(await picked.readAsBytes());
-      info = ref.read(backupServiceProvider).inspect(text);
-    } on BackupException catch (e) {
-      if (context.mounted) showSnack(context, e.message);
-      return;
     } catch (e, st) {
       log('Could not read the backup file', error: e, stackTrace: st);
       if (context.mounted) showSnack(context, 'This isn\'t a Finance Tracker backup.');
       return;
     }
-    if (!context.mounted) return;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Replace your data?'),
-        content: Text(
-          'This backup is from ${fullDateFormat.format(info.createdAt)} and has ${info.entryCount} '
-          '${info.entryCount == 1 ? 'entry' : 'entries'}. Everything in the app now will be replaced by it.',
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Replace')),
-        ],
-      ),
-    );
-    if (ok != true || !context.mounted) return;
-    try {
-      await ref.read(actionsProvider).restoreBackup(text);
-      if (context.mounted) showSnack(context, 'Restored ${info.entryCount} entries.');
-    } catch (e, st) {
-      log('Restore failed', error: e, stackTrace: st);
-      if (context.mounted) showSnack(context, 'Nothing was restored. Your entries are unchanged.');
-    }
+    if (context.mounted) await confirmAndRestore(context, ref, text);
   }
 
   void _explainReading(BuildContext context) {
@@ -201,6 +173,12 @@ class MorePage extends ConsumerWidget {
             subtitle: const Text('Replaces what is in the app. Screenshots aren\'t included'),
             onTap: () => _restore(context, ref),
           ),
+          ListTile(
+            leading: const AppIcon(AppIcons.drive),
+            title: const Text('Restore from Google Drive'),
+            subtitle: const Text('Pick one of the weekly backups saved there'),
+            onTap: () => restoreFromDrive(context, ref),
+          ),
           const Divider(),
           const _AppLockTile(),
           ListTile(
@@ -284,18 +262,23 @@ class _AutoBackupTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(autoBackupProvider).value;
+    final folder = ref.watch(autoBackupProvider).value;
+    final drive = ref.watch(driveBackupProvider).value;
     final scheme = Theme.of(context).colorScheme;
+    final folderOn = folder?.on ?? false;
+    final driveOn = drive?.on ?? false;
+    final failed = folder?.error != null || drive?.error != null;
+    final where = [if (folderOn) folder!.folderName ?? 'your folder', if (driveOn) 'Google Drive'].join(' and ');
     return ListTile(
       leading: const AppIcon(AppIcons.autoBackup),
       title: const Text('Automatic backup'),
       subtitle: Text(
-        s == null || !s.on
-            ? 'Off. Save a backup to a folder every week'
-            : s.error != null
+        !folderOn && !driveOn
+            ? 'Off. Save a backup to a folder or Google Drive every week'
+            : failed
             ? 'The last backup failed. Tap to see why'
-            : 'Every week to ${s.folderName ?? 'your folder'}',
-        style: s?.error != null ? TextStyle(color: scheme.error) : null,
+            : 'Every week to $where',
+        style: failed ? TextStyle(color: scheme.error) : null,
       ),
       onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AutoBackupPage())),
     );

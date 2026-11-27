@@ -75,6 +75,11 @@ void main() {
     for (final page in ['Recurring payments', 'Categories', 'Budgets', 'Automatic backup']) {
       await tester.tap(find.text(page).first);
       await settle();
+      if (page == 'Automatic backup') {
+        expect(find.text('Google Drive backup is off'), findsOneWidget);
+        await tester.scrollUntilVisible(find.text('Sign in with Google'), 200);
+        expect(find.text('Restore from Google Drive'), findsOneWidget);
+      }
       await tester.pageBack();
       await settle();
     }

@@ -56,13 +56,20 @@ class _HomeShellState extends ConsumerState<HomeShell> with WidgetsBindingObserv
 
   /// Saves the weekly backup when it's due, and says so only if it failed.
   Future<void> _weeklyBackup() async {
-    try {
-      await ref.read(autoBackupProvider.notifier).runIfDue();
-    } on AutoBackupException {
-      if (mounted) showSnack(context, 'This week\'s backup wasn\'t saved. See More → Automatic backup.');
-    } catch (e, st) {
-      log('Weekly backup failed', error: e, stackTrace: st);
+    var failed = false;
+    for (final run in [
+      ref.read(autoBackupProvider.notifier).runIfDue,
+      ref.read(driveBackupProvider.notifier).runIfDue,
+    ]) {
+      try {
+        await run();
+      } on AutoBackupException {
+        failed = true;
+      } catch (e, st) {
+        log('Weekly backup failed', error: e, stackTrace: st);
+      }
     }
+    if (failed && mounted) showSnack(context, 'This week\'s backup wasn\'t saved. See More → Automatic backup.');
   }
 
   @override

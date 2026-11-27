@@ -73,6 +73,7 @@ abstract final class AppIcons {
   static const fingerprint = HugeIcons.strokeRoundedFingerPrint;
   static const autoBackup = HugeIcons.strokeRoundedDatabaseSync01;
   static const folder = HugeIcons.strokeRoundedFolder01;
+  static const drive = HugeIcons.strokeRoundedGoogleDrive;
   static const goal = HugeIcons.strokeRoundedTarget02;
   static const putIn = HugeIcons.strokeRoundedMoneyAdd02;
   static const takeOut = HugeIcons.strokeRoundedMoneyRemove02;

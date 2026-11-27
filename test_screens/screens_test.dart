@@ -190,6 +190,9 @@ Future<FinanceRepository> _seed() async {
     ref: '533499990001',
     pair: 1,
   );
+  await repo.setSetting('drive_backup_on', 'on');
+  await repo.setSetting('drive_backup_account', 'you@gmail.com');
+  await repo.setSetting('drive_backup_last', DateTime.now().subtract(const Duration(days: 2)).toIso8601String());
   return repo;
 }
 
@@ -343,6 +346,8 @@ void main() {
       await shot('21_insights');
       nav.push(MaterialPageRoute<void>(builder: (_) => const AutoBackupPage()));
       await shot('22_auto_backup');
+      await tester.drag(find.byType(ListView).last, const Offset(0, -700));
+      await shot('23_drive_backup');
     });
   }
 }

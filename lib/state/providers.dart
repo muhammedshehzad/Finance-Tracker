@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 
 import '../core/dates.dart';
 import '../data/finance_repository.dart';
@@ -14,6 +15,9 @@ import '../data/models/txn_draft.dart';
 import '../services/ai/gemini_service.dart';
 import '../services/backup/auto_backup_service.dart';
 import '../services/backup/backup_folder_channel.dart';
+import '../services/backup/drive_auth.dart';
+import '../services/backup/drive_backup_service.dart';
+import '../services/backup/drive_client.dart';
 import '../services/backup_service.dart';
 import '../services/capture/capture_channel.dart';
 import '../services/capture/capture_service.dart';
@@ -503,6 +507,56 @@ class AutoBackup extends AsyncNotifier<AutoBackupStatus> {
 
 /// See [AutoBackup].
 final autoBackupProvider = AsyncNotifierProvider<AutoBackup, AutoBackupStatus>(AutoBackup.new);
+
+/// Talks to Google Drive.
+final driveClientProvider = Provider<DriveClient>((ref) {
+  final client = http.Client();
+  ref.onDispose(client.close);
+  return DriveClient(client);
+});
+
+/// Gets Google's permission to use the app's Drive folder.
+final driveAuthProvider = Provider<DriveAuth>((ref) => GoogleDriveAuth());
+
+/// Weekly backups into the app's hidden folder in Google Drive.
+final driveBackupServiceProvider = Provider<DriveBackupService>(
+  (ref) => DriveBackupService(
+    ref.watch(repositoryProvider),
+    ref.watch(backupServiceProvider),
+    ref.watch(driveClientProvider),
+    ref.watch(driveAuthProvider),
+  ),
+);
+
+/// Whether backups also go to Google Drive, with the actions that change it.
+class DriveBackup extends AsyncNotifier<DriveBackupStatus> {
+  DriveBackupService get _service => ref.read(driveBackupServiceProvider);
+
+  @override
+  Future<DriveBackupStatus> build() => ref.watch(driveBackupServiceProvider).status();
+
+  Future<T> _then<T>(Future<T> Function() action) async {
+    try {
+      return await action();
+    } finally {
+      state = AsyncData(await _service.status());
+    }
+  }
+
+  /// Asks Google for access and backs up. Returns false when the user backed out.
+  Future<bool> connect() => _then(() => _service.connect(DateTime.now()));
+
+  Future<void> turnOff() => _then(_service.turnOff);
+
+  Future<void> backUpNow() => _then(() => _service.backUp(DateTime.now()));
+
+  /// Backs up if a week has passed, showing nothing. Throws
+  /// [AutoBackupException] on failure.
+  Future<bool> runIfDue() => _then(() => _service.runIfDue(DateTime.now()));
+}
+
+/// See [DriveBackup].
+final driveBackupProvider = AsyncNotifierProvider<DriveBackup, DriveBackupStatus>(DriveBackup.new);
 
 /// What a month's entries show against the month before.
 final insightsProvider = FutureProvider.autoDispose.family<MonthInsights, DateTime>((ref, month) async {

@@ -42,7 +42,7 @@
 - **Accounts**: cash, bank, wallet, credit card and money lent to others, with opening balances and net worth.
 - **Budgets**: an overall monthly limit plus limits per category.
 - **Savings goals**: put money aside toward a trip or a fund, see how far along it is, and with a date, what to put in each month. A goal only keeps track, so balances and spending don't change.
-- **Backup and restore**: all your data in one file you can keep in Drive, and back on a new phone in two taps. Automatic backup saves one every week to a folder you pick, keeping the newest four, and Android's own backup can copy the entries to your Google account.
+- **Backup and restore**: all your data in one file you can keep in Drive, and back on a new phone in two taps. Automatic backup saves one every week to a folder you pick, to a hidden app folder in your Google Drive, or both, keeping the newest four in each, and restores from Drive on a new phone. Android's own backup can also copy the entries to your Google account.
 - **Export**: a CSV of every entry, ready for Sheets or Excel.
 - **App lock**: asks for your fingerprint, face or phone PIN when the app opens, and again after a minute away. It uses the phone's own screen lock, so nothing new to remember.
 - **Light and dark** themes that follow the system.
@@ -76,7 +76,7 @@ flutter analyze
 flutter test
 ```
 
-116 tests cover the receipt, voice and notification parsers, monthly insights, savings goals, app lock, automatic backup, how Gemini's answers are checked, spotting payments you already have, saving several from one screenshot, money formatting, the recurring schedule, the database and its migrations, backup and restore, and the Excel importer end to end, plus a smoke test that opens every screen with data in it. To re-render the screens in light and dark, run `flutter test test_screens --update-goldens` and look in `test_screens/out/`.
+126 tests cover the receipt, voice and notification parsers, monthly insights, savings goals, app lock, automatic backup to a folder and to Google Drive, how Gemini's answers are checked, spotting payments you already have, saving several from one screenshot, money formatting, the recurring schedule, the database and its migrations, backup and restore, and the Excel importer end to end, plus a smoke test that opens every screen with data in it. To re-render the screens in light and dark, run `flutter test test_screens --update-goldens` and look in `test_screens/out/`.
 
 ## Installing on your phone
 
@@ -100,7 +100,7 @@ adb install -r build/app/outputs/flutter-apk/app-arm64-v8a-full-release.apk
 
 Screenshots and voice notes are read far more accurately by Gemini than on the phone. The app talks to it through [Firebase AI Logic](https://firebase.google.com/docs/ai-logic) with the Gemini Developer API, so no Gemini key ships in the app. A build without Firebase settings works fully offline, and any build falls back to the phone when Gemini can't be reached.
 
-**What leaves the phone.** Only the screenshot you add or the voice note you record, sent to Google to be read. Entries, accounts and backups stay on the phone. On the free tier, Google may use what is sent to improve its products, and people may review it; a project with billing turned on keeps it out of that. *More → Reading screenshots and voice* says which applies to the installed build.
+**What leaves the phone.** Only the screenshot you add or the voice note you record, sent to Google to be read. Entries and accounts stay on the phone, and backups go only where you send them. On the free tier, Google may use what is sent to improve its products, and people may review it; a project with billing turned on keeps it out of that. *More → Reading screenshots and voice* says which applies to the installed build.
 
 **Set it up once:**
 
@@ -122,6 +122,20 @@ Screenshots and voice notes are read far more accurately by Gemini than on the p
 7. For CI, add a repository secret named `FIREBASE_ENV_JSON` holding the contents of `firebase.env.json`.
 
 **About the debug token.** Anyone holding your APK could pull the token out and spend your Gemini quota, so don't share the APK, and revoke the token in the console if it leaks. On the free tier the worst case is hitting the limit; with billing on, set a budget alert. A build without the token tries Play Integrity, which works once the app comes from Play. To try another model, add `"GEMINI_MODEL"` to `firebase.env.json`; the default is `gemini-3.5-flash-lite`.
+
+## Backing up to Google Drive
+
+*More → Automatic backup → Sign in with Google* copies the weekly backup into the app's own hidden folder in your Drive (the `drive.appdata` scope). Only this app can open that folder, and the app can't see anything else in your Drive. *Restore from Google Drive* lists those backups, for instance on a new phone. The backups are plain JSON, so whatever is in the app is readable by Google on its servers, like anything else in your Drive.
+
+Google only gives this access to a copy of the app it knows, so **set it up once** in the Google Cloud project behind your Firebase project (the console's project picker shows the same name):
+
+1. Open [APIs & Services → Library](https://console.cloud.google.com/apis/library/drive.googleapis.com), search for **Google Drive API** and choose **Enable**.
+2. Open **Google Auth Platform**. If it asks, fill in **Branding** with an app name and your email.
+3. Under **Audience**, choose **External**. While the app is in **Testing**, add your Gmail address under **Test users**. Google ends a test user's access seven days after they allow it, so the weekly backup will ask you to sign in again about once a week. To avoid that, choose **Publish app**.
+4. Under **Data Access**, choose **Add or remove scopes** and add `.../auth/drive.appdata`.
+5. Under **Clients**, look for an **Android** client with the package name `com.shehzad.finance_tracker` and your release key's SHA-1 (Firebase may already have made one). If there isn't one, choose **Create client → Android** and enter both. The SHA-1 comes from the same `keytool` command as in step 3 of *Reading with Gemini*. A debug build needs a second client with the debug key's SHA-1.
+
+Nothing changes in the app's code or build settings: Google checks the package name and signing key of the installed app. If something is missing, the app says Google sign-in isn't set up for this copy.
 
 ## Release builds
 
