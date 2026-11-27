@@ -47,7 +47,7 @@ class _Row {
   int amount;
   DateTime date;
   final bool hasTime;
-  final String? payee;
+  String? payee;
   final String? upiRef;
   final String? app;
   int? categoryId;
@@ -259,7 +259,7 @@ class _MultiReceiptPageState extends ConsumerState<MultiReceiptPage> {
   }
 }
 
-/// Edits one payment's amount, direction, category and day.
+/// Edits one payment's name, amount, direction, category and day.
 class _RowEditor extends StatefulWidget {
   const _RowEditor({required this.row, required this.lookups});
 
@@ -272,6 +272,7 @@ class _RowEditor extends StatefulWidget {
 
 class _RowEditorState extends State<_RowEditor> {
   late final _amount = TextEditingController(text: paiseToInput(widget.row.amount));
+  late final _payee = TextEditingController(text: widget.row.payee ?? '');
   late TxnType _type = widget.row.type;
   late int? _categoryId = widget.row.categoryId;
   late DateTime _date = widget.row.date;
@@ -279,6 +280,7 @@ class _RowEditorState extends State<_RowEditor> {
   @override
   void dispose() {
     _amount.dispose();
+    _payee.dispose();
     super.dispose();
   }
 
@@ -290,7 +292,9 @@ class _RowEditorState extends State<_RowEditor> {
       showSnack(context, 'Enter an amount.');
       return;
     }
+    final payee = _payee.text.trim();
     widget.row
+      ..payee = payee.isEmpty ? null : payee
       ..amount = amount
       ..type = _type
       ..categoryId = _categoryId
@@ -307,7 +311,7 @@ class _RowEditorState extends State<_RowEditor> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(widget.row.payee ?? 'Unknown payee', style: Theme.of(context).textTheme.titleMedium),
+          Text('Edit payment', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           SegmentedButton<TxnType>(
             segments: const [
@@ -319,6 +323,12 @@ class _RowEditorState extends State<_RowEditor> {
               _type = s.first;
               if (category?.kind != _kind) _categoryId = null;
             }),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _payee,
+            textCapitalization: TextCapitalization.words,
+            decoration: InputDecoration(labelText: _type == TxnType.income ? 'Received from' : 'Paid to'),
           ),
           const SizedBox(height: 12),
           TextField(

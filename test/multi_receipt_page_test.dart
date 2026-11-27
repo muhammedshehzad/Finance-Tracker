@@ -18,7 +18,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 void main() {
   sqfliteFfiInit();
 
-  testWidgets('saves the ticked payments and leaves the recorded one out', (tester) async {
+  testWidgets('saves the ticked payments, with an edited name, and leaves the recorded one out', (tester) async {
     late FinanceRepository repo;
     final day = DateTime(2026, 11, 25);
     await tester.runAsync(() async {
@@ -82,12 +82,21 @@ void main() {
     expect(find.text('Save 2 entries'), findsOneWidget);
     expect(find.text('+₹1,500'), findsOneWidget);
 
+    await tester.tap(find.text('Swiggy'));
+    await settle();
+    await tester.enterText(find.widgetWithText(TextField, 'Paid to'), 'Swiggy Instamart');
+    await tester.tap(find.text('Done'));
+    await settle();
+    expect(find.text('Swiggy Instamart'), findsOneWidget);
+
     await tester.tap(find.text('Save 2 entries'));
     await settle();
 
     final saved = await tester.runAsync(() => repo.allTxns());
     expect(saved!.length, 3);
     expect(saved.where((t) => t.type == TxnType.income).single.amount, 150000);
-    expect(saved.where((t) => t.payee == 'Swiggy').single.source, TxnSource.screenshot);
+    final swiggy = saved.where((t) => t.payee == 'Swiggy Instamart').single;
+    expect(swiggy.source, TxnSource.screenshot);
+    expect(swiggy.note, 'Swiggy Instamart');
   });
 }
