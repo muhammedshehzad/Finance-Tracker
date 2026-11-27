@@ -9,11 +9,15 @@ import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-/** Hosts Flutter and answers the payment capture channel. */
+/** Hosts Flutter and answers the payment capture and backup folder channels. */
 class MainActivity : FlutterFragmentActivity() {
+
+    private val backupFolder = BackupFolder(this)
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "finance_tracker/backup_folder")
+            .setMethodCallHandler(backupFolder::handle)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "finance_tracker/capture")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -36,6 +40,13 @@ class MainActivity : FlutterFragmentActivity() {
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    @Deprecated("Activity results still arrive here for startActivityForResult")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (!backupFolder.onActivityResult(requestCode, resultCode, data)) {
+            super.onActivityResult(requestCode, resultCode, data)
+        }
     }
 
     private val component get() = ComponentName(this, PaymentNotificationListener::class.java)

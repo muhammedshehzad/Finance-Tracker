@@ -40,7 +40,7 @@
 - **Views**: daily list, calendar, month by month, budgets with a pace marker, a stats donut by category, and search across every entry.
 - **Accounts**: cash, bank, wallet, credit card and money lent to others, with opening balances and net worth.
 - **Budgets**: an overall monthly limit plus limits per category.
-- **Backup and restore**: all your data in one file you can keep in Drive, and back on a new phone in two taps.
+- **Backup and restore**: all your data in one file you can keep in Drive, and back on a new phone in two taps. Automatic backup saves one every week to a folder you pick, keeping the newest four, and Android's own backup can copy the entries to your Google account.
 - **Export**: a CSV of every entry, ready for Sheets or Excel.
 - **App lock**: asks for your fingerprint, face or phone PIN when the app opens, and again after a minute away. It uses the phone's own screen lock, so nothing new to remember.
 - **Light and dark** themes that follow the system.
@@ -204,5 +204,4 @@ On Android 13 and later, the notification access switch is greyed out for an APK
 
 ## Roadmap
 
-- **Scheduled backup.** Backups are made by hand today; a weekly one to Google Drive fits on top of the backup service.
 - **Capture on real devices.** The notification parser is tested against real message shapes, but the listener itself is still to be tried across phones and banks.

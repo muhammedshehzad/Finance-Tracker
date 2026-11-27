@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and older: copy only the database to the Google account
+     backup, so screenshots never push it past Android's 25 MB limit. -->
+<full-backup-content>
+    <include domain="database" path="." />
+</full-backup-content>

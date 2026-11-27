@@ -1,7 +1,10 @@
+import 'dart:developer';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../services/backup/auto_backup_service.dart';
 import '../state/providers.dart';
 import 'accounts/accounts_page.dart';
 import 'icons.dart';
@@ -47,7 +50,19 @@ class _HomeShellState extends ConsumerState<HomeShell> with WidgetsBindingObserv
       if (posted > 0 && mounted) {
         showSnack(context, 'Recorded $posted recurring ${posted == 1 ? 'entry' : 'entries'} that came due');
       }
+      await _weeklyBackup();
     });
+  }
+
+  /// Saves the weekly backup when it's due, and says so only if it failed.
+  Future<void> _weeklyBackup() async {
+    try {
+      await ref.read(autoBackupProvider.notifier).runIfDue();
+    } on AutoBackupException {
+      if (mounted) showSnack(context, 'This week\'s backup wasn\'t saved. See More → Automatic backup.');
+    } catch (e, st) {
+      log('Weekly backup failed', error: e, stackTrace: st);
+    }
   }
 
   @override

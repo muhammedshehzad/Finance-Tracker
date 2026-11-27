@@ -11,6 +11,8 @@ import '../data/models/recurring_rule.dart';
 import '../data/models/txn.dart';
 import '../data/models/txn_draft.dart';
 import '../services/ai/gemini_service.dart';
+import '../services/backup/auto_backup_service.dart';
+import '../services/backup/backup_folder_channel.dart';
 import '../services/backup_service.dart';
 import '../services/capture/capture_channel.dart';
 import '../services/capture/capture_service.dart';
@@ -394,3 +396,60 @@ class AppLockSetting extends AsyncNotifier<bool> {
 
 /// See [AppLockSetting].
 final appLockProvider = AsyncNotifierProvider<AppLockSetting, bool>(AppLockSetting.new);
+
+/// Writes backups into the folder the user chose.
+final backupFolderChannelProvider = Provider<BackupFolderChannel>((ref) => const BackupFolderChannel());
+
+/// Weekly backups into a chosen folder.
+final autoBackupServiceProvider = Provider<AutoBackupService>(
+  (ref) => AutoBackupService(
+    ref.watch(repositoryProvider),
+    ref.watch(backupServiceProvider),
+    ref.watch(backupFolderChannelProvider),
+  ),
+);
+
+/// Where automatic backups go and how the last one went, with the actions
+/// that change it.
+class AutoBackup extends AsyncNotifier<AutoBackupStatus> {
+  AutoBackupService get _service => ref.read(autoBackupServiceProvider);
+
+  @override
+  Future<AutoBackupStatus> build() => ref.watch(autoBackupServiceProvider).status();
+
+  Future<void> _refresh() async => state = AsyncData(await _service.status());
+
+  /// Picks a folder and backs up into it. Returns false when none was chosen.
+  Future<bool> chooseFolder() async {
+    try {
+      return await _service.chooseFolder(DateTime.now());
+    } finally {
+      await _refresh();
+    }
+  }
+
+  Future<void> turnOff() async {
+    await _service.turnOff();
+    await _refresh();
+  }
+
+  Future<void> backUpNow() async {
+    try {
+      await _service.backUp(DateTime.now());
+    } finally {
+      await _refresh();
+    }
+  }
+
+  /// Backs up if a week has passed. Throws [AutoBackupException] on failure.
+  Future<bool> runIfDue() async {
+    try {
+      return await _service.runIfDue(DateTime.now());
+    } finally {
+      await _refresh();
+    }
+  }
+}
+
+/// See [AutoBackup].
+final autoBackupProvider = AsyncNotifierProvider<AutoBackup, AutoBackupStatus>(AutoBackup.new);

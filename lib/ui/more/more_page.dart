@@ -16,6 +16,7 @@ import '../../services/backup_service.dart';
 import '../../services/csv_export.dart';
 import '../../services/lock/app_lock_service.dart';
 import '../../state/providers.dart';
+import '../backup/auto_backup_page.dart';
 import '../budgets/budget_settings_page.dart';
 import '../capture/capture_settings_page.dart';
 import '../capture/captured_payments_page.dart';
@@ -180,10 +181,11 @@ class MorePage extends ConsumerWidget {
             subtitle: const Text('Opens in Excel or Google Sheets'),
             onTap: () => _export(context, ref),
           ),
+          const _AutoBackupTile(),
           ListTile(
             leading: const AppIcon(AppIcons.backup),
-            title: const Text('Back up'),
-            subtitle: const Text('Save all your data to one file, e.g. in Google Drive'),
+            title: const Text('Back up now'),
+            subtitle: const Text('Save all your data to one file and share it, e.g. to Google Drive'),
             onTap: () => _backUp(context, ref),
           ),
           ListTile(
@@ -265,6 +267,30 @@ class _AppLockTile extends ConsumerWidget {
       subtitle: const Text('Ask for your fingerprint or phone PIN when the app opens'),
       value: on,
       onChanged: (v) => _toggle(context, ref, v),
+    );
+  }
+}
+
+/// Opens automatic backup, with how it stands in the subtitle.
+class _AutoBackupTile extends ConsumerWidget {
+  const _AutoBackupTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(autoBackupProvider).value;
+    final scheme = Theme.of(context).colorScheme;
+    return ListTile(
+      leading: const AppIcon(AppIcons.autoBackup),
+      title: const Text('Automatic backup'),
+      subtitle: Text(
+        s == null || !s.on
+            ? 'Off. Save a backup to a folder every week'
+            : s.error != null
+            ? 'The last backup failed. Tap to see why'
+            : 'Every week to ${s.folderName ?? 'your folder'}',
+        style: s?.error != null ? TextStyle(color: scheme.error) : null,
+      ),
+      onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AutoBackupPage())),
     );
   }
 }
