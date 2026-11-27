@@ -200,7 +200,7 @@ class _FakeChannel extends CaptureChannel {
   @override
   bool get supported => true;
   @override
-  Future<bool> isEnabled() async => false;
+  Future<bool> isEnabled() async => true;
   @override
   Future<Set<String>?> packages() async => null;
   @override
@@ -217,6 +217,11 @@ void main() {
       tester.view.physicalSize = const Size(1080, 2340);
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
+      // Draw screens as a finger sees them, without keyboard focus rings.
+      FocusManager.instance.highlightStrategy = FocusHighlightStrategy.alwaysTouch;
+      // Tests draw shadows as solid outlines; draw real ones as a phone does.
+      debugDisableShadows = false;
+      addTearDown(() => debugDisableShadows = true);
       late FinanceRepository repo;
       await tester.runAsync(() async {
         Intl.defaultLocale = 'en_IN';
@@ -346,7 +351,7 @@ void main() {
       await shot('21_insights');
       nav.push(MaterialPageRoute<void>(builder: (_) => const AutoBackupPage()));
       await shot('22_auto_backup');
-      await tester.drag(find.byType(ListView).last, const Offset(0, -700));
+      await tester.drag(find.byType(ListView).last, const Offset(0, -420));
       await shot('23_drive_backup');
     });
   }

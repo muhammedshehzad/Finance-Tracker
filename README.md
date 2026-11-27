@@ -21,7 +21,7 @@
 <p align="center">
   <img src="docs/screenshots/daily.png" width="200" alt="Daily view">
   <img src="docs/screenshots/captured.png" width="200" alt="Captured payments">
-  <img src="docs/screenshots/stats.png" width="200" alt="Stats">
+  <img src="docs/screenshots/insights.png" width="200" alt="Monthly insights">
   <img src="docs/screenshots/daily-dark.png" width="200" alt="Daily view in dark mode">
 </p>
 
@@ -31,7 +31,7 @@
 |---|---|
 | 📸 **Screenshot** | Pick a Google Pay, PhonePe, Paytm or bank receipt. Gemini reads the amount, payee, date and UPI reference, or on-device OCR does when Gemini is off or offline, and the screenshot stays on the entry. A payment history screenshot adds every payment on it in one go, with ones you already have left unticked. The same UPI reference is never added twice. |
 | 🎙️ **Voice** | Say *"paid 450 for lunch and 120 for auto in cash"* and get two drafts to check. Gemini writes down what you said, even in mixed English and Hindi, and the phone's own recogniser takes over offline. Understands rupees, k, thousand, lakh, lending and card bills. |
-| 🔔 **Notifications** | Google Pay, PhonePe, Paytm and BHIM payments, plus bank SMS if you switch it on, wait under Captured payments with the category already guessed. OTPs, requests, reminders and failed payments are dropped. |
+| 🔔 **Notifications** | Google Pay, PhonePe, Paytm and BHIM payments, plus bank SMS if you switch it on, wait under *More → Captured payments* as pending, with the category already guessed. Nothing is recorded until you tap **Add**, **Edit** or **Ignore**. Bank SMS are read in the shapes HDFC, SBI, ICICI, Axis and Canara use, including Canara's short *Dr.* and *Cr.*, so card and net-banking payments are caught too. The same payment seen in an app and in an SMS is flagged so you add it once, and SMS still in the notification shade are checked again when you open the app. OTPs, requests, reminders and failed payments are dropped. |
 | 📊 **Excel import** | Bring in a year of history from an `.xlsx` or `.csv` file. Columns are detected for you, you review how accounts and categories map before anything is written, and importing the same file again adds nothing. |
 
 ## Everything else
@@ -53,6 +53,14 @@
   <img src="docs/screenshots/calendar.png" width="180" alt="Calendar">
   <img src="docs/screenshots/recurring.png" width="180" alt="Recurring payments">
   <img src="docs/screenshots/budget-dark.png" width="180" alt="Budgets in dark mode">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/stats.png" width="180" alt="Stats">
+  <img src="docs/screenshots/goals.png" width="180" alt="Savings goals">
+  <img src="docs/screenshots/accounts.png" width="180" alt="Accounts">
+  <img src="docs/screenshots/backup.png" width="180" alt="Automatic backup to Google Drive">
+  <img src="docs/screenshots/capture-settings.png" width="180" alt="Payment capture settings in dark mode">
 </p>
 
 ## How the money works
@@ -220,4 +228,4 @@ On Android 13 and later, the notification access switch is greyed out for an APK
 
 ## Roadmap
 
-- **Capture on real devices.** The notification parser is tested against real message shapes, but the listener itself is still to be tried across phones and banks.
+- **Capture on more phones and banks.** It works on a real phone with Canara Bank SMS through Google Messages. Other banks' SMS are covered by tests built from their usual wording, but not yet tried on a phone.
